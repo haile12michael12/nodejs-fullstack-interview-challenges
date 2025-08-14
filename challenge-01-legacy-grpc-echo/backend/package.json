@@ -1,0 +1,24 @@
+{
+  "name": "grpc-echo-backend",
+  "version": "1.0.0",
+  "description": "Legacy gRPC Echo service backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:proxy": "node proxy.js",
+    "dev": "nodemon server.js",
+    "dev:proxy": "nodemon proxy.js",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:proxy\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@grpc/proto-loader": "^0.6.13",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "grpc": "^1.24.11"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.1",
+    "nodemon": "^2.0.22"
+  }
+}
