@@ -1,0 +1,17 @@
+{
+  "name": "sse-live-logs-backend",
+  "version": "1.0.0",
+  "description": "Server-Sent Events live logs streaming server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test.js"
+  },
+  "keywords": ["sse", "logs", "streaming", "nodejs"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

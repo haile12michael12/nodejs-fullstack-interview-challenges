@@ -1,0 +1,20 @@
+{
+  "name": "ws-chat-legacy-backend",
+  "version": "1.0.0",
+  "description": "WebSocket chat server using ws library with legacy Node APIs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test.js"
+  },
+  "keywords": ["websocket", "chat", "realtime", "nodejs"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "ws": "^8.14.2"
+  }
+}

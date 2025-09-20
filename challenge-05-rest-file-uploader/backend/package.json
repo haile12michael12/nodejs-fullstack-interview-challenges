@@ -1,0 +1,17 @@
+{
+  "name": "rest-file-uploader-backend",
+  "version": "1.0.0",
+  "description": "REST file uploader with multipart parsing and security scanning",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test.js"
+  },
+  "keywords": ["file", "upload", "multipart", "security", "nodejs"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

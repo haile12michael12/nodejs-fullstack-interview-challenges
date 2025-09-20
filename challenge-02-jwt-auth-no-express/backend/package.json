@@ -1,0 +1,17 @@
+{
+  "name": "jwt-auth-backend",
+  "version": "1.0.0",
+  "description": "JWT Authentication server using Node.js built-in http module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test.js"
+  },
+  "keywords": ["jwt", "auth", "nodejs", "http"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
