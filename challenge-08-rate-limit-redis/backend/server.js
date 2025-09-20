@@ -1,368 +1,251 @@
 const http = require('http');
 const url = require('url');
-const fs = require('fs');
-const path = require('path');
-const zlib = require('zlib');
-const crypto = require('crypto');
+const { createClient } = require('redis');
+const config = require('./src/config');
+const { sendError } = require('./src/utils/response');
+const { TokenBucketRateLimiter, createRateLimitMiddleware } = require('./src/middleware/rateLimiter');
+const apiRoutes = require('./src/routes/api');
 
-const PORT = process.env.PORT || 8080;
-const REPOS_DIR = path.join(__dirname, 'repos');
+// Redis client
+let redisClient;
+let rateLimiter;
 
-// Create repos directory if it doesn't exist
-if (!fs.existsSync(REPOS_DIR)) {
-  fs.mkdirSync(REPOS_DIR, { recursive: true });
-}
-
-// Git utilities
-class GitRepository {
-  constructor(repoPath) {
-    this.path = repoPath;
-    this.objectsPath = path.join(repoPath, 'objects');
-    this.refsPath = path.join(repoPath, 'refs');
-    this.headPath = path.join(repoPath, 'HEAD');
-  }
-
-  exists() {
-    return fs.existsSync(this.path) && fs.existsSync(this.objectsPath);
-  }
-
-  getRefs() {
-    const refs = {};
-    
-    try {
-      // Read HEAD
-      if (fs.existsSync(this.headPath)) {
-        const headContent = fs.readFileSync(this.headPath, 'utf8').trim();
-        if (headContent.startsWith('ref: ')) {
-          refs['HEAD'] = headContent.substring(5);
-        } else {
-          refs['HEAD'] = headContent;
-        }
-      }
-
-      // Read refs
-      const readRefsDir = (dir, prefix = '') => {
-        if (!fs.existsSync(dir)) return;
-        
-        const entries = fs.readdirSync(dir, { withFileTypes: true });
-        for (const entry of entries) {
-          const fullPath = path.join(dir, entry.name);
-          if (entry.isDirectory()) {
-            readRefsDir(fullPath, prefix + entry.name + '/');
-          } else {
-            const refContent = fs.readFileSync(fullPath, 'utf8').trim();
-            refs[prefix + entry.name] = refContent;
-          }
-        }
-      };
-
-      readRefsDir(path.join(this.refsPath, 'heads'));
-      readRefsDir(path.join(this.refsPath, 'tags'));
-
-    } catch (error) {
-      console.error('Error reading refs:', error);
-    }
-
-    return refs;
-  }
-
-  getObject(hash) {
-    try {
-      const dir = hash.substring(0, 2);
-      const file = hash.substring(2);
-      const objectPath = path.join(this.objectsPath, dir, file);
-      
-      if (!fs.existsSync(objectPath)) {
-        return null;
-      }
-
-      const compressed = fs.readFileSync(objectPath);
-      const decompressed = zlib.inflateSync(compressed);
-      
-      // Parse object header
-      const headerEnd = decompressed.indexOf(0);
-      if (headerEnd === -1) {
-        throw new Error('Invalid object format');
-      }
-
-      const header = decompressed.subarray(0, headerEnd).toString();
-      const content = decompressed.subarray(headerEnd + 1);
-
-      const [type, size] = header.split(' ');
-      if (!type || !size || parseInt(size) !== content.length) {
-        throw new Error('Invalid object header');
-      }
-
-      return { type, size: parseInt(size), content };
-    } catch (error) {
-      console.error('Error reading object:', error);
-      return null;
-    }
-  }
-
-  getPackFile(hash) {
-    try {
-      const packPath = path.join(this.path, 'objects', 'pack', `pack-${hash}.pack`);
-      const idxPath = path.join(this.path, 'objects', 'pack', `pack-${hash}.idx`);
-      
-      if (!fs.existsSync(packPath) || !fs.existsSync(idxPath)) {
-        return null;
-      }
-
-      return {
-        pack: fs.readFileSync(packPath),
-        idx: fs.readFileSync(idxPath)
-      };
-    } catch (error) {
-      console.error('Error reading pack file:', error);
-      return null;
-    }
-  }
-}
-
-// Utility functions
-function sendResponse(res, statusCode, data, contentType = 'application/octet-stream') {
-  res.writeHead(statusCode, {
-    'Content-Type': contentType,
-    'Cache-Control': 'no-cache'
-  });
-  res.end(data);
-}
-
-function sendError(res, statusCode, message) {
-  res.writeHead(statusCode, {
-    'Content-Type': 'text/plain'
-  });
-  res.end(message);
-}
-
-function parseRepoPath(pathname) {
-  // Extract repo name from URL like /repo.git/info/refs
-  const match = pathname.match(/^\/([^\/]+)\.git/);
-  return match ? match[1] : null;
-}
-
-function createRefsResponse(refs) {
-  let response = '';
-  for (const [ref, hash] of Object.entries(refs)) {
-    response += `${hash} refs/${ref}\n`;
-  }
-  response += '\n'; // End with newline
-  return response;
-}
-
-function createPackResponse(packData) {
-  // Simple pack file format (simplified)
-  const header = Buffer.from('PACK\x00\x00\x00\x02\x00\x00\x00\x01', 'binary');
-  const content = Buffer.from(packData || 'dummy content');
-  const trailer = crypto.createHash('sha1').update(header).update(content).digest();
+// CORS middleware
+function corsMiddleware(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', config.cors.origin);
+  res.setHeader('Access-Control-Allow-Methods', config.cors.methods.join(', '));
+  res.setHeader('Access-Control-Allow-Headers', config.cors.headers.join(', '));
   
-  return Buffer.concat([header, content, trailer]);
-}
-
-// Route handlers
-function handleInfoRefs(req, res, repoName, service) {
-  const repoPath = path.join(REPOS_DIR, `${repoName}.git`);
-  const repo = new GitRepository(repoPath);
-
-  if (!repo.exists()) {
-    return sendError(res, 404, 'Repository not found');
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200);
+    res.end();
+    return true;
   }
-
-  const refs = repo.getRefs();
-  const response = createRefsResponse(refs);
-
-  res.writeHead(200, {
-    'Content-Type': `application/x-git-${service}-advertisement`,
-    'Cache-Control': 'no-cache'
-  });
-
-  // Send capability advertisement
-  const capabilities = service === 'upload-pack' 
-    ? 'multi_ack thin-pack side-band side-band-64k ofs-delta shallow no-progress include-tag'
-    : 'multi_ack thin-pack side-band side-band-64k ofs-delta shallow no-progress include-tag';
-  
-  res.write(`# service=git-${service}\n`);
-  res.write('0000');
-  res.end(response);
+  return false;
 }
 
-function handleUploadPack(req, res, repoName) {
-  const repoPath = path.join(REPOS_DIR, `${repoName}.git`);
-  const repo = new GitRepository(repoPath);
-
-  if (!repo.exists()) {
-    return sendError(res, 404, 'Repository not found');
-  }
-
-  // Parse the request body for want/have commands
-  let body = '';
-  req.on('data', chunk => body += chunk);
-  req.on('end', () => {
-    try {
-      // Simple pack file generation (in real implementation, this would be much more complex)
-      const packData = createPackResponse('dummy pack content');
-      sendResponse(res, 200, packData);
-    } catch (error) {
-      console.error('Error generating pack:', error);
-      sendError(res, 500, 'Internal server error');
-    }
-  });
-}
-
-function handleReceivePack(req, res, repoName) {
-  const repoPath = path.join(REPOS_DIR, `${repoName}.git`);
-  
-  // Create repository if it doesn't exist
-  if (!fs.existsSync(repoPath)) {
-    fs.mkdirSync(repoPath, { recursive: true });
-    fs.mkdirSync(path.join(repoPath, 'objects'), { recursive: true });
-    fs.mkdirSync(path.join(repoPath, 'refs', 'heads'), { recursive: true });
-    fs.mkdirSync(path.join(repoPath, 'refs', 'tags'), { recursive: true });
-    
-    // Initialize HEAD
-    fs.writeFileSync(path.join(repoPath, 'HEAD'), 'ref: refs/heads/master\n');
-  }
-
-  let body = Buffer.alloc(0);
-  req.on('data', chunk => body = Buffer.concat([body, chunk]));
-  req.on('end', () => {
-    try {
-      // Simple response for successful push
-      const response = '0000000000000000000000000000000000000000 capabilities^{}\x00report-status\n';
-      res.writeHead(200, {
-        'Content-Type': 'application/x-git-receive-pack-result',
-        'Cache-Control': 'no-cache'
-      });
-      res.end(response);
-    } catch (error) {
-      console.error('Error processing receive pack:', error);
-      sendError(res, 500, 'Internal server error');
-    }
-  });
-}
-
-function handleRepositoryList(req, res) {
+// Initialize Redis connection
+async function initializeRedis() {
   try {
-    const repos = fs.readdirSync(REPOS_DIR)
-      .filter(item => {
-        const itemPath = path.join(REPOS_DIR, item);
-        return fs.statSync(itemPath).isDirectory() && item.endsWith('.git');
-      })
-      .map(item => item.replace('.git', ''));
+    redisClient = createClient({
+      url: config.redis.url,
+      retryDelayOnFailover: config.redis.retryDelayOnFailover,
+      maxRetriesPerRequest: config.redis.maxRetriesPerRequest
+    });
 
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Git Repositories</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 40px; }
-          h1 { color: #333; }
-          ul { list-style: none; padding: 0; }
-          li { margin: 10px 0; }
-          a { color: #007acc; text-decoration: none; }
-          a:hover { text-decoration: underline; }
-          .clone { background: #f5f5f5; padding: 10px; border-radius: 4px; font-family: monospace; }
-        </style>
-      </head>
-      <body>
-        <h1>Available Git Repositories</h1>
-        ${repos.length === 0 ? '<p>No repositories available.</p>' : `
-          <ul>
-            ${repos.map(repo => `
-              <li>
-                <h3>${repo}</h3>
-                <p>Clone with:</p>
-                <div class="clone">git clone http://localhost:${PORT}/${repo}.git</div>
-              </li>
-            `).join('')}
-          </ul>
-        `}
-        <hr>
-        <p><small>Git Over HTTP Server</small></p>
-      </body>
-      </html>
-    `;
+    redisClient.on('error', (err) => {
+      console.error('Redis Client Error:', err);
+    });
 
-    sendResponse(res, 200, html, 'text/html');
+    redisClient.on('connect', () => {
+      console.log('Connected to Redis');
+    });
+
+    await redisClient.connect();
+    rateLimiter = new TokenBucketRateLimiter(redisClient);
+    
+    console.log('Redis initialized successfully');
   } catch (error) {
-    console.error('Error listing repositories:', error);
-    sendError(res, 500, 'Internal server error');
+    console.error('Failed to initialize Redis:', error);
+    console.log('Server will run without rate limiting');
+    rateLimiter = null;
   }
 }
 
 // Main server
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const parsedUrl = url.parse(req.url, true);
-  const pathname = parsedUrl.pathname;
+  const path = parsedUrl.pathname;
   const method = req.method;
 
-  console.log(`${method} ${pathname}`);
+  console.log(`${method} ${path}`);
+
+  // Apply CORS
+  if (corsMiddleware(req, res)) {
+    return;
+  }
 
   try {
-    // Root path - show repository list
-    if (pathname === '/') {
-      return handleRepositoryList(req, res);
+    // Apply rate limiting to API endpoints
+    if (path.startsWith('/api/') && rateLimiter) {
+      const rateLimitMiddleware = createRateLimitMiddleware(rateLimiter);
+      await rateLimitMiddleware(req, res);
     }
 
-    // Extract repo name and service
-    const repoName = parseRepoPath(pathname);
-    if (!repoName) {
-      return sendError(res, 400, 'Invalid repository path');
+    switch (path) {
+      case '/api/data':
+        if (method === 'GET') {
+          await apiRoutes.handleApiData(req, res);
+        } else {
+          sendError(res, 405, 'Method not allowed');
+        }
+        break;
+        
+      case '/api/status':
+        if (method === 'GET') {
+          await apiRoutes.handleApiStatus(req, res);
+        } else {
+          sendError(res, 405, 'Method not allowed');
+        }
+        break;
+        
+      case '/api/test':
+        if (method === 'GET') {
+          await apiRoutes.handleApiTest(req, res);
+        } else {
+          sendError(res, 405, 'Method not allowed');
+        }
+        break;
+        
+      case '/':
+        // Frontend interface
+        const frontend = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Rate Limited API</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+              .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+              h1 { color: #333; text-align: center; }
+              .endpoint { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #007acc; }
+              .endpoint h3 { margin-top: 0; color: #007acc; }
+              .endpoint code { background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+              button { background: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+              button:hover { background: #005999; }
+              .result { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 4px; font-family: monospace; white-space: pre-wrap; }
+              .rate-limit-info { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin: 20px 0; }
+              .rate-limit-info h3 { margin-top: 0; color: #856404; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>Rate Limited API</h1>
+              
+              <div class="rate-limit-info">
+                <h3>Rate Limit Information</h3>
+                <p><strong>Token Bucket:</strong> ${config.rateLimit.tokenBucket.capacity} tokens capacity</p>
+                <p><strong>Refill Rate:</strong> ${config.rateLimit.tokenBucket.refillRate} token per second</p>
+                <p><strong>Window:</strong> ${config.rateLimit.windowMs / 1000} seconds</p>
+                <p><strong>Max Requests:</strong> ${config.rateLimit.maxRequests} per window</p>
+              </div>
+              
+              <div class="endpoint">
+                <h3>GET /api/data</h3>
+                <p>Returns sample API data</p>
+                <button onclick="testEndpoint('/api/data')">Test Endpoint</button>
+              </div>
+              
+              <div class="endpoint">
+                <h3>GET /api/status</h3>
+                <p>Returns API status and rate limit information</p>
+                <button onclick="testEndpoint('/api/status')">Test Endpoint</button>
+              </div>
+              
+              <div class="endpoint">
+                <h3>GET /api/test</h3>
+                <p>Test endpoint with random delay</p>
+                <button onclick="testEndpoint('/api/test')">Test Endpoint</button>
+              </div>
+              
+              <div id="result" class="result" style="display: none;"></div>
+            </div>
+            
+            <script>
+              async function testEndpoint(endpoint) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.textContent = 'Loading...';
+                
+                try {
+                  const response = await fetch(endpoint);
+                  const data = await response.json();
+                  
+                  let resultText = \`Status: \${response.status} \${response.statusText}\\n\\n\`;
+                  
+                  // Add rate limit headers if present
+                  const limit = response.headers.get('X-RateLimit-Limit');
+                  const remaining = response.headers.get('X-RateLimit-Remaining');
+                  const reset = response.headers.get('X-RateLimit-Reset');
+                  const retryAfter = response.headers.get('Retry-After');
+                  
+                  if (limit) {
+                    resultText += \`Rate Limit Info:\\n\`;
+                    resultText += \`  Limit: \${limit}\\n\`;
+                    resultText += \`  Remaining: \${remaining}\\n\`;
+                    resultText += \`  Reset: \${reset}\\n\`;
+                    if (retryAfter) {
+                      resultText += \`  Retry After: \${retryAfter} seconds\\n\`;
+                    }
+                    resultText += \`\\n\`;
+                  }
+                  
+                  resultText += \`Response:\\n\${JSON.stringify(data, null, 2)}\`;
+                  resultDiv.textContent = resultText;
+                } catch (error) {
+                  resultDiv.textContent = \`Error: \${error.message}\`;
+                }
+              }
+              
+              // Test all endpoints on load
+              setTimeout(() => {
+                testEndpoint('/api/status');
+              }, 1000);
+            </script>
+          </body>
+          </html>
+        `;
+        sendResponse(res, 200, frontend, 'text/html');
+        break;
+        
+      default:
+        sendError(res, 404, 'Not found');
     }
-
-    // Git smart HTTP endpoints
-    if (pathname.endsWith('/info/refs')) {
-      const service = parsedUrl.query.service;
-      if (service === 'git-upload-pack' || service === 'git-receive-pack') {
-        return handleInfoRefs(req, res, repoName, service.replace('git-', ''));
-      } else {
-        return sendError(res, 400, 'Invalid service');
-      }
-    }
-
-    if (pathname.endsWith('/git-upload-pack') && method === 'POST') {
-      return handleUploadPack(req, res, repoName);
-    }
-
-    if (pathname.endsWith('/git-receive-pack') && method === 'POST') {
-      return handleReceivePack(req, res, repoName);
-    }
-
-    // Default 404
-    sendError(res, 404, 'Not found');
-
   } catch (error) {
     console.error('Server error:', error);
     sendError(res, 500, 'Internal server error');
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`Git Over HTTP server running on port ${PORT}`);
-  console.log(`Repository directory: ${REPOS_DIR}`);
-  console.log(`\nAvailable endpoints:`);
-  console.log(`  GET / - Repository list`);
-  console.log(`  GET /<repo>.git/info/refs?service=git-upload-pack - Clone info`);
-  console.log(`  GET /<repo>.git/info/refs?service=git-receive-pack - Push info`);
-  console.log(`  POST /<repo>.git/git-upload-pack - Clone data`);
-  console.log(`  POST /<repo>.git/git-receive-pack - Push data`);
-  console.log(`\nExample usage:`);
-  console.log(`  git clone http://localhost:${PORT}/my-repo.git`);
-  console.log(`  git push http://localhost:${PORT}/my-repo.git main`);
-});
+// Start server
+async function startServer() {
+  await initializeRedis();
+  
+  server.listen(config.port, () => {
+    console.log(`Rate Limited API server running on port ${config.port}`);
+    console.log(`Available endpoints:`);
+    console.log(`  GET / - Frontend interface`);
+    console.log(`  GET /api/data - Sample API data`);
+    console.log(`  GET /api/status - API status`);
+    console.log(`  GET /api/test - Test endpoint`);
+    console.log(`\nRate limiting:`);
+    console.log(`  Token bucket capacity: ${config.rateLimit.tokenBucket.capacity}`);
+    console.log(`  Refill rate: ${config.rateLimit.tokenBucket.refillRate} token/second`);
+    console.log(`  Window: ${config.rateLimit.windowMs / 1000} seconds`);
+    if (!rateLimiter) {
+      console.log(`\n⚠️  Warning: Redis not available, rate limiting disabled`);
+    }
+  });
+}
+
+startServer().catch(console.error);
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   console.log('Shutting down server...');
+  if (redisClient) {
+    await redisClient.quit();
+  }
   server.close(() => {
     process.exit(0);
   });
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   console.log('Shutting down server...');
+  if (redisClient) {
+    await redisClient.quit();
+  }
   server.close(() => {
     process.exit(0);
   });

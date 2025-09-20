@@ -1,14 +1,14 @@
 {
-  "name": "git-over-http-backend",
+  "name": "legacy-xml-api-backend",
   "version": "1.0.0",
-  "description": "Git smart HTTP protocol implementation",
+  "description": "Legacy XML API server with XML-only endpoints",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "node test.js"
   },
-  "keywords": ["git", "http", "smart", "protocol", "nodejs"],
+  "keywords": ["xml", "legacy", "api", "nodejs"],
   "author": "",
   "license": "MIT",
   "engines": {

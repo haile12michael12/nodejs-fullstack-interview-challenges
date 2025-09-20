@@ -1,17 +1,20 @@
 {
-  "name": "git-over-http-backend",
+  "name": "rate-limit-redis-backend",
   "version": "1.0.0",
-  "description": "Git smart HTTP protocol implementation",
+  "description": "Rate limited API with Redis token bucket implementation",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "node test.js"
   },
-  "keywords": ["git", "http", "smart", "protocol", "nodejs"],
+  "keywords": ["rate-limit", "redis", "token-bucket", "nodejs"],
   "author": "",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "redis": "^4.6.8"
   }
 }

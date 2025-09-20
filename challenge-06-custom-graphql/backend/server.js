@@ -1,356 +1,165 @@
 const http = require('http');
 const url = require('url');
-const fs = require('fs');
-const path = require('path');
-const zlib = require('zlib');
-const crypto = require('crypto');
+const config = require('./src/config');
+const { sendError } = require('./src/utils/response');
+const { handleGraphQL } = require('./src/routes/graphql');
 
-const PORT = process.env.PORT || 8080;
-const REPOS_DIR = path.join(__dirname, 'repos');
-
-// Create repos directory if it doesn't exist
-if (!fs.existsSync(REPOS_DIR)) {
-  fs.mkdirSync(REPOS_DIR, { recursive: true });
-}
-
-// Git utilities
-class GitRepository {
-  constructor(repoPath) {
-    this.path = repoPath;
-    this.objectsPath = path.join(repoPath, 'objects');
-    this.refsPath = path.join(repoPath, 'refs');
-    this.headPath = path.join(repoPath, 'HEAD');
-  }
-
-  exists() {
-    return fs.existsSync(this.path) && fs.existsSync(this.objectsPath);
-  }
-
-  getRefs() {
-    const refs = {};
-    
-    try {
-      // Read HEAD
-      if (fs.existsSync(this.headPath)) {
-        const headContent = fs.readFileSync(this.headPath, 'utf8').trim();
-        if (headContent.startsWith('ref: ')) {
-          refs['HEAD'] = headContent.substring(5);
-        } else {
-          refs['HEAD'] = headContent;
-        }
-      }
-
-      // Read refs
-      const readRefsDir = (dir, prefix = '') => {
-        if (!fs.existsSync(dir)) return;
-        
-        const entries = fs.readdirSync(dir, { withFileTypes: true });
-        for (const entry of entries) {
-          const fullPath = path.join(dir, entry.name);
-          if (entry.isDirectory()) {
-            readRefsDir(fullPath, prefix + entry.name + '/');
-          } else {
-            const refContent = fs.readFileSync(fullPath, 'utf8').trim();
-            refs[prefix + entry.name] = refContent;
-          }
-        }
-      };
-
-      readRefsDir(path.join(this.refsPath, 'heads'));
-      readRefsDir(path.join(this.refsPath, 'tags'));
-
-    } catch (error) {
-      console.error('Error reading refs:', error);
-    }
-
-    return refs;
-  }
-
-  getObject(hash) {
-    try {
-      const dir = hash.substring(0, 2);
-      const file = hash.substring(2);
-      const objectPath = path.join(this.objectsPath, dir, file);
-      
-      if (!fs.existsSync(objectPath)) {
-        return null;
-      }
-
-      const compressed = fs.readFileSync(objectPath);
-      const decompressed = zlib.inflateSync(compressed);
-      
-      // Parse object header
-      const headerEnd = decompressed.indexOf(0);
-      if (headerEnd === -1) {
-        throw new Error('Invalid object format');
-      }
-
-      const header = decompressed.subarray(0, headerEnd).toString();
-      const content = decompressed.subarray(headerEnd + 1);
-
-      const [type, size] = header.split(' ');
-      if (!type || !size || parseInt(size) !== content.length) {
-        throw new Error('Invalid object header');
-      }
-
-      return { type, size: parseInt(size), content };
-    } catch (error) {
-      console.error('Error reading object:', error);
-      return null;
-    }
-  }
-
-  getPackFile(hash) {
-    try {
-      const packPath = path.join(this.path, 'objects', 'pack', `pack-${hash}.pack`);
-      const idxPath = path.join(this.path, 'objects', 'pack', `pack-${hash}.idx`);
-      
-      if (!fs.existsSync(packPath) || !fs.existsSync(idxPath)) {
-        return null;
-      }
-
-      return {
-        pack: fs.readFileSync(packPath),
-        idx: fs.readFileSync(idxPath)
-      };
-    } catch (error) {
-      console.error('Error reading pack file:', error);
-      return null;
-    }
-  }
-}
-
-// Utility functions
-function sendResponse(res, statusCode, data, contentType = 'application/octet-stream') {
-  res.writeHead(statusCode, {
-    'Content-Type': contentType,
-    'Cache-Control': 'no-cache'
-  });
-  res.end(data);
-}
-
-function sendError(res, statusCode, message) {
-  res.writeHead(statusCode, {
-    'Content-Type': 'text/plain'
-  });
-  res.end(message);
-}
-
-function parseRepoPath(pathname) {
-  // Extract repo name from URL like /repo.git/info/refs
-  const match = pathname.match(/^\/([^\/]+)\.git/);
-  return match ? match[1] : null;
-}
-
-function createRefsResponse(refs) {
-  let response = '';
-  for (const [ref, hash] of Object.entries(refs)) {
-    response += `${hash} refs/${ref}\n`;
-  }
-  response += '\n'; // End with newline
-  return response;
-}
-
-function createPackResponse(packData) {
-  // Simple pack file format (simplified)
-  const header = Buffer.from('PACK\x00\x00\x00\x02\x00\x00\x00\x01', 'binary');
-  const content = Buffer.from(packData || 'dummy content');
-  const trailer = crypto.createHash('sha1').update(header).update(content).digest();
+// CORS middleware
+function corsMiddleware(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', config.cors.origin);
+  res.setHeader('Access-Control-Allow-Methods', config.cors.methods.join(', '));
+  res.setHeader('Access-Control-Allow-Headers', config.cors.headers.join(', '));
   
-  return Buffer.concat([header, content, trailer]);
-}
-
-// Route handlers
-function handleInfoRefs(req, res, repoName, service) {
-  const repoPath = path.join(REPOS_DIR, `${repoName}.git`);
-  const repo = new GitRepository(repoPath);
-
-  if (!repo.exists()) {
-    return sendError(res, 404, 'Repository not found');
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200);
+    res.end();
+    return true;
   }
-
-  const refs = repo.getRefs();
-  const response = createRefsResponse(refs);
-
-  res.writeHead(200, {
-    'Content-Type': `application/x-git-${service}-advertisement`,
-    'Cache-Control': 'no-cache'
-  });
-
-  // Send capability advertisement
-  const capabilities = service === 'upload-pack' 
-    ? 'multi_ack thin-pack side-band side-band-64k ofs-delta shallow no-progress include-tag'
-    : 'multi_ack thin-pack side-band side-band-64k ofs-delta shallow no-progress include-tag';
-  
-  res.write(`# service=git-${service}\n`);
-  res.write('0000');
-  res.end(response);
-}
-
-function handleUploadPack(req, res, repoName) {
-  const repoPath = path.join(REPOS_DIR, `${repoName}.git`);
-  const repo = new GitRepository(repoPath);
-
-  if (!repo.exists()) {
-    return sendError(res, 404, 'Repository not found');
-  }
-
-  // Parse the request body for want/have commands
-  let body = '';
-  req.on('data', chunk => body += chunk);
-  req.on('end', () => {
-    try {
-      // Simple pack file generation (in real implementation, this would be much more complex)
-      const packData = createPackResponse('dummy pack content');
-      sendResponse(res, 200, packData);
-    } catch (error) {
-      console.error('Error generating pack:', error);
-      sendError(res, 500, 'Internal server error');
-    }
-  });
-}
-
-function handleReceivePack(req, res, repoName) {
-  const repoPath = path.join(REPOS_DIR, `${repoName}.git`);
-  
-  // Create repository if it doesn't exist
-  if (!fs.existsSync(repoPath)) {
-    fs.mkdirSync(repoPath, { recursive: true });
-    fs.mkdirSync(path.join(repoPath, 'objects'), { recursive: true });
-    fs.mkdirSync(path.join(repoPath, 'refs', 'heads'), { recursive: true });
-    fs.mkdirSync(path.join(repoPath, 'refs', 'tags'), { recursive: true });
-    
-    // Initialize HEAD
-    fs.writeFileSync(path.join(repoPath, 'HEAD'), 'ref: refs/heads/master\n');
-  }
-
-  let body = Buffer.alloc(0);
-  req.on('data', chunk => body = Buffer.concat([body, chunk]));
-  req.on('end', () => {
-    try {
-      // Simple response for successful push
-      const response = '0000000000000000000000000000000000000000 capabilities^{}\x00report-status\n';
-      res.writeHead(200, {
-        'Content-Type': 'application/x-git-receive-pack-result',
-        'Cache-Control': 'no-cache'
-      });
-      res.end(response);
-    } catch (error) {
-      console.error('Error processing receive pack:', error);
-      sendError(res, 500, 'Internal server error');
-    }
-  });
-}
-
-function handleRepositoryList(req, res) {
-  try {
-    const repos = fs.readdirSync(REPOS_DIR)
-      .filter(item => {
-        const itemPath = path.join(REPOS_DIR, item);
-        return fs.statSync(itemPath).isDirectory() && item.endsWith('.git');
-      })
-      .map(item => item.replace('.git', ''));
-
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Git Repositories</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 40px; }
-          h1 { color: #333; }
-          ul { list-style: none; padding: 0; }
-          li { margin: 10px 0; }
-          a { color: #007acc; text-decoration: none; }
-          a:hover { text-decoration: underline; }
-          .clone { background: #f5f5f5; padding: 10px; border-radius: 4px; font-family: monospace; }
-        </style>
-      </head>
-      <body>
-        <h1>Available Git Repositories</h1>
-        ${repos.length === 0 ? '<p>No repositories available.</p>' : `
-          <ul>
-            ${repos.map(repo => `
-              <li>
-                <h3>${repo}</h3>
-                <p>Clone with:</p>
-                <div class="clone">git clone http://localhost:${PORT}/${repo}.git</div>
-              </li>
-            `).join('')}
-          </ul>
-        `}
-        <hr>
-        <p><small>Git Over HTTP Server</small></p>
-      </body>
-      </html>
-    `;
-
-    sendResponse(res, 200, html, 'text/html');
-  } catch (error) {
-    console.error('Error listing repositories:', error);
-    sendError(res, 500, 'Internal server error');
-  }
+  return false;
 }
 
 // Main server
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const parsedUrl = url.parse(req.url, true);
-  const pathname = parsedUrl.pathname;
+  const path = parsedUrl.pathname;
   const method = req.method;
 
-  console.log(`${method} ${pathname}`);
+  console.log(`${method} ${path}`);
+
+  // Apply CORS
+  if (corsMiddleware(req, res)) {
+    return;
+  }
 
   try {
-    // Root path - show repository list
-    if (pathname === '/') {
-      return handleRepositoryList(req, res);
+    switch (path) {
+      case '/graphql':
+        if (method === 'POST') {
+          await handleGraphQL(req, res);
+        } else {
+          sendError(res, 405, 'Method not allowed. Use POST for GraphQL queries.');
+        }
+        break;
+        
+      case '/':
+        // GraphQL Playground
+        const playground = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>GraphQL Playground</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+              .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+              h1 { color: #333; text-align: center; }
+              .playground { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+              .editor, .result { border: 1px solid #ddd; border-radius: 4px; }
+              .editor { background: #f8f9fa; }
+              .result { background: white; }
+              textarea { width: 100%; height: 400px; border: none; outline: none; padding: 15px; font-family: 'Monaco', 'Menlo', monospace; font-size: 14px; resize: none; background: transparent; }
+              .result-content { padding: 15px; font-family: 'Monaco', 'Menlo', monospace; font-size: 14px; white-space: pre-wrap; }
+              button { background: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+              button:hover { background: #005999; }
+              .examples { margin: 20px 0; padding: 15px; background: #e8f4fd; border-radius: 4px; }
+              .examples h3 { margin-top: 0; color: #2c3e50; }
+              .examples code { background: #34495e; color: #ecf0f1; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>GraphQL Playground</h1>
+              
+              <div class="playground">
+                <div class="editor">
+                  <h3>Query Editor</h3>
+                  <textarea id="query" placeholder="Enter your GraphQL query here...">query {
+  users {
+    id
+    name
+    email
+    posts {
+      id
+      title
+      content
     }
-
-    // Extract repo name and service
-    const repoName = parseRepoPath(pathname);
-    if (!repoName) {
-      return sendError(res, 400, 'Invalid repository path');
+  }
+}</textarea>
+                  <button onclick="executeQuery()">Execute Query</button>
+                </div>
+                
+                <div class="result">
+                  <h3>Result</h3>
+                  <div id="result" class="result-content">Click "Execute Query" to see results...</div>
+                </div>
+              </div>
+              
+              <div class="examples">
+                <h3>Example Queries:</h3>
+                <p><strong>Get all users:</strong></p>
+                <code>query { users { id name email } }</code>
+                
+                <p><strong>Get user with posts:</strong></p>
+                <code>query { user(id: 1) { id name posts { id title } } }</code>
+                
+                <p><strong>Create a user:</strong></p>
+                <code>mutation { createUser(name: "New User", email: "new@example.com") { id name email } }</code>
+                
+                <p><strong>Create a post:</strong></p>
+                <code>mutation { createPost(title: "New Post", content: "Post content", authorId: 1) { id title author { name } } }</code>
+              </div>
+            </div>
+            
+            <script>
+              async function executeQuery() {
+                const query = document.getElementById('query').value;
+                const resultDiv = document.getElementById('result');
+                
+                if (!query.trim()) {
+                  resultDiv.textContent = 'Please enter a query';
+                  return;
+                }
+                
+                resultDiv.textContent = 'Executing...';
+                
+                try {
+                  const response = await fetch('/graphql', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query })
+                  });
+                  
+                  const result = await response.json();
+                  resultDiv.textContent = JSON.stringify(result, null, 2);
+                } catch (error) {
+                  resultDiv.textContent = 'Error: ' + error.message;
+                }
+              }
+            </script>
+          </body>
+          </html>
+        `;
+        sendResponse(res, 200, playground, 'text/html');
+        break;
+        
+      default:
+        sendError(res, 404, 'Not found');
     }
-
-    // Git smart HTTP endpoints
-    if (pathname.endsWith('/info/refs')) {
-      const service = parsedUrl.query.service;
-      if (service === 'git-upload-pack' || service === 'git-receive-pack') {
-        return handleInfoRefs(req, res, repoName, service.replace('git-', ''));
-      } else {
-        return sendError(res, 400, 'Invalid service');
-      }
-    }
-
-    if (pathname.endsWith('/git-upload-pack') && method === 'POST') {
-      return handleUploadPack(req, res, repoName);
-    }
-
-    if (pathname.endsWith('/git-receive-pack') && method === 'POST') {
-      return handleReceivePack(req, res, repoName);
-    }
-
-    // Default 404
-    sendError(res, 404, 'Not found');
-
   } catch (error) {
     console.error('Server error:', error);
     sendError(res, 500, 'Internal server error');
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`Git Over HTTP server running on port ${PORT}`);
-  console.log(`Repository directory: ${REPOS_DIR}`);
-  console.log(`\nAvailable endpoints:`);
-  console.log(`  GET / - Repository list`);
-  console.log(`  GET /<repo>.git/info/refs?service=git-upload-pack - Clone info`);
-  console.log(`  GET /<repo>.git/info/refs?service=git-receive-pack - Push info`);
-  console.log(`  POST /<repo>.git/git-upload-pack - Clone data`);
-  console.log(`  POST /<repo>.git/git-receive-pack - Push data`);
-  console.log(`\nExample usage:`);
-  console.log(`  git clone http://localhost:${PORT}/my-repo.git`);
-  console.log(`  git push http://localhost:${PORT}/my-repo.git main`);
+server.listen(config.port, () => {
+  console.log(`GraphQL server running on port ${config.port}`);
+  console.log(`Available endpoints:`);
+  console.log(`  GET / - GraphQL Playground`);
+  console.log(`  POST /graphql - GraphQL endpoint`);
+  console.log(`\nExample queries:`);
+  console.log(`  query { users { id name email } }`);
+  console.log(`  mutation { createUser(name: "Test", email: "test@example.com") { id } }`);
 });
 
 // Graceful shutdown

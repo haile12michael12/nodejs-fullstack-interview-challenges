@@ -1,17 +1,20 @@
 {
-  "name": "git-over-http-backend",
+  "name": "custom-graphql-backend",
   "version": "1.0.0",
-  "description": "Git smart HTTP protocol implementation",
+  "description": "Custom GraphQL server implementation without Apollo",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "node test.js"
   },
-  "keywords": ["git", "http", "smart", "protocol", "nodejs"],
+  "keywords": ["graphql", "custom", "server", "nodejs"],
   "author": "",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "graphql": "^16.8.1"
   }
 }
