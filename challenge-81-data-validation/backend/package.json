@@ -1,0 +1,17 @@
+{
+  "name": "challenge-81-backend",
+  "version": "1.0.0",
+  "description": "Data validation backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "joi": "^17.9.2",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

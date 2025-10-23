@@ -1,0 +1,19 @@
+{
+  "name": "challenge-65-backend",
+  "version": "1.0.0",
+  "description": "Satellite communication backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "satellite.js": "^5.0.0",
+    "dsp.js": "^1.0.0",
+    "uuid": "^9.0.0",
+    "socket.io": "^4.7.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

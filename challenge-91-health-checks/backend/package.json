@@ -1,0 +1,16 @@
+{
+  "name": "challenge-91-backend",
+  "version": "1.0.0",
+  "description": "Health checks backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

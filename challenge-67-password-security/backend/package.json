@@ -1,0 +1,19 @@
+{
+  "name": "challenge-67-backend",
+  "version": "1.0.0",
+  "description": "Password security backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "argon2": "^0.30.0",
+    "uuid": "^9.0.0",
+    "jsonwebtoken": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

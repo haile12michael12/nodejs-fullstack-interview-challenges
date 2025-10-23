@@ -1,0 +1,19 @@
+{
+  "name": "challenge-58-backend",
+  "version": "1.0.0",
+  "description": "Biometric authentication backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "face-api.js": "^0.22.2",
+    "webcrypto": "^1.0.0",
+    "uuid": "^9.0.0",
+    "argon2": "^0.30.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

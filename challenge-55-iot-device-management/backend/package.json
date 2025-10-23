@@ -1,0 +1,19 @@
+{
+  "name": "challenge-55-backend",
+  "version": "1.0.0",
+  "description": "IoT device management backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "mqtt": "^4.3.7",
+    "sqlite3": "^5.1.6",
+    "uuid": "^9.0.0",
+    "jsonwebtoken": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

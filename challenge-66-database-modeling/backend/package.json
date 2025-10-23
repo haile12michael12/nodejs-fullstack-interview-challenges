@@ -1,0 +1,18 @@
+{
+  "name": "challenge-66-backend",
+  "version": "1.0.0",
+  "description": "Database modeling backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "sequelize": "^6.32.1",
+    "pg": "^8.11.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
