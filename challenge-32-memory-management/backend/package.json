@@ -1,0 +1,17 @@
+{
+  "name": "challenge-32-backend",
+  "version": "1.0.0",
+  "description": "Memory management backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "memwatch-next": "^0.3.0",
+    "heapdump": "^0.3.15"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

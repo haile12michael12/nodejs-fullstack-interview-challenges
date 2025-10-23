@@ -1,0 +1,18 @@
+{
+  "name": "challenge-33-backend",
+  "version": "1.0.0",
+  "description": "Horizontal scaling backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "cluster": "node cluster.js"
+  },
+  "dependencies": {
+    "ioredis": "^5.3.2",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

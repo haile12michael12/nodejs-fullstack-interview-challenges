@@ -1,0 +1,17 @@
+{
+  "name": "challenge-20-backend",
+  "version": "1.0.0",
+  "description": "Advanced message queue patterns backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

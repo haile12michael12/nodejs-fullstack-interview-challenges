@@ -1,0 +1,17 @@
+{
+  "name": "challenge-18-backend",
+  "version": "1.0.0",
+  "description": "Kafka streams processing backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

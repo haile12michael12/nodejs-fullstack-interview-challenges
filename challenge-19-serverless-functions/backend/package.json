@@ -1,0 +1,17 @@
+{
+  "name": "challenge-19-backend",
+  "version": "1.0.0",
+  "description": "Serverless functions runtime",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "vm2": "^3.9.19",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

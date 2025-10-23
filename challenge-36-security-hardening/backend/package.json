@@ -1,0 +1,20 @@
+{
+  "name": "challenge-36-backend",
+  "version": "1.0.0",
+  "description": "Security hardening backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "helmet": "^6.1.5",
+    "csurf": "^1.11.0",
+    "express-validator": "^6.15.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

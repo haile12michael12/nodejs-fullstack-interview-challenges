@@ -1,0 +1,20 @@
+{
+  "name": "challenge-31-backend",
+  "version": "1.0.0",
+  "description": "Performance optimization backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "profile": "clinic doctor -- node server.js",
+    "flame": "0x server.js"
+  },
+  "dependencies": {
+    "clinic": "^12.1.0",
+    "0x": "^5.5.0",
+    "artillery": "^2.0.0-27"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

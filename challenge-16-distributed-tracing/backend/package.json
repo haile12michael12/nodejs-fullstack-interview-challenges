@@ -1,0 +1,20 @@
+{
+  "name": "challenge-16-backend",
+  "version": "1.0.0",
+  "description": "Distributed tracing backend with OpenTelemetry",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.4.1",
+    "@opentelemetry/sdk-node": "^0.39.1",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.39.1",
+    "@opentelemetry/instrumentation-http": "^0.39.1",
+    "@opentelemetry/instrumentation-express": "^0.31.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

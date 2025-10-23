@@ -1,0 +1,19 @@
+{
+  "name": "challenge-47-backend",
+  "version": "1.0.0",
+  "description": "Workflow engine backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "mongodb": "^5.0.1",
+    "redis": "^4.6.7",
+    "uuid": "^9.0.0",
+    "bull": "^4.10.4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

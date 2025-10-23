@@ -1,0 +1,20 @@
+{
+  "name": "challenge-37-backend",
+  "version": "1.0.0",
+  "description": "Data migration system backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "migrate": "node migrate.js up",
+    "rollback": "node migrate.js down"
+  },
+  "dependencies": {
+    "mongodb": "^5.0.1",
+    "uuid": "^9.0.0",
+    "moment": "^2.29.4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
