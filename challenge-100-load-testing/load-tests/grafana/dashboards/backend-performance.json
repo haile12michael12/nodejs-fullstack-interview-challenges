@@ -1,0 +1,27 @@
+{
+  "dashboard": {
+    "title": "Backend Performance Metrics",
+    "panels": [
+      {
+        "title": "API Response Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "api_response_time",
+            "legendFormat": "Response Time (ms)"
+          }
+        ]
+      },
+      {
+        "title": "Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(errors[1m])",
+            "legendFormat": "Errors per second"
+          }
+        ]
+      }
+    ]
+  }
+}

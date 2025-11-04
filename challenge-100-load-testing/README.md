@@ -1,44 +1,42 @@
-## Challenge 100 – Load Testing
 
-### Overview
-Create load testing for applications to identify performance bottlenecks and ensure scalability.
-
-### Features
-- Load test scenario creation
-- Performance metrics collection
-- Stress testing capabilities
-- Test result reporting and analysis
+Actions
 
 ### Prerequisites
 - Node.js 18+
+- Docker and Docker Compose
+- k6 load testing tool
 
 ### Setup
-- Backend: `cd backend && npm install`
-- Frontend: `cd frontend && npm install`
+1. Install backend dependencies: `cd backend && npm install`
+2. Install frontend dependencies: `cd frontend && npm install`
+3. Install root dependencies: `npm install`
 
 ### Run
-- Backend: `npm start` in `backend`
-- Frontend: `npm start` in `frontend`
+- Start all services: `npm run docker:up`
+- Start development environment: `npm run dev`
+- Run backend only: `npm run backend`
+- Run frontend only: `npm run frontend`
 
-### Environment
-- `LOAD_TEST_DURATION` (default 60 seconds)
-- `LOAD_TEST_CONCURRENCY` (default 10)
-- `PORT` (default 3000)
+### Load Testing
+- Smoke test: `npm run test:load:smoke`
+- Baseline test: `npm run test:load:baseline`
+- Stress test: `npm run test:load:stress`
 
-### Endpoints
-- `POST /load-test` → Run load test
-- `GET /load-test/results` → Get test results
-- `GET /load-test/report` → Get detailed report
-- `POST /load-test/scenario` → Create test scenario
+### Directory Structure
+- `backend/` - Node.js Express API
+- `frontend/` - React dashboard application
+- `load-tests/` - k6 test scripts and monitoring configuration
+- `.github/workflows/` - CI/CD workflows
+
+### Monitoring
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3002 (admin/admin)
 
 ### Testing
-- Test load scenario execution
-- Verify performance metrics collection
-- Check stress testing capabilities
-- Validate test result reporting
+- Unit tests: `npm test`
+- Load tests: `npm run test:load:*`
 
 ### Notes
-- Use Artillery or similar load testing tool
-- Implement custom test scenarios
-- Monitor resource utilization during tests
-- Generate performance reports
+- All services can be run with Docker Compose
+- Grafana dashboards are pre-configured
+- Test results are stored in `load-tests/results/`

@@ -1,0 +1,10 @@
+{
+  "api": {
+    "metrics": "/api/metrics",
+    "health": "/health"
+  },
+  "endpoints": [
+    "/api/metrics",
+    "/health"
+  ]
+}

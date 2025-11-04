@@ -1,0 +1,27 @@
+{
+  "dashboard": {
+    "title": "k6 Load Test Overview",
+    "panels": [
+      {
+        "title": "HTTP Requests",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_reqs[1m])",
+            "legendFormat": "Requests per second"
+          }
+        ]
+      },
+      {
+        "title": "Response Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "http_req_duration",
+            "legendFormat": "Response Time (ms)"
+          }
+        ]
+      }
+    ]
+  }
+}

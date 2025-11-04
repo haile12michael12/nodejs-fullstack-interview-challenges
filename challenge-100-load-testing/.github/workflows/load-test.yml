@@ -1,0 +1,27 @@
+name: Load Test
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight
+  workflow_dispatch:
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up k6
+      run: |
+        curl https://github.com/loadimpact/k6/releases/download/v0.42.0/k6-v0.42.0-linux-amd64.tar.gz -L | tar xvz --strip-components 1
+    
+    - name: Run baseline test
+      run: |
+        cd load-tests
+        ./k6 run k6/baseline.js
+    
+    - name: Run stress test
+      run: |
+        cd load-tests
+        ./k6 run k6/stress.js

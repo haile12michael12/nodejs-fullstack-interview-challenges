@@ -1,0 +1,20 @@
+{
+  "name": "challenge-100-load-testing",
+  "version": "1.0.0",
+  "description": "Load Testing Challenge",
+  "scripts": {
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "cd backend && npm run dev",
+    "frontend": "cd frontend && npm run start",
+    "test": "cd backend && npm test",
+    "test:load:smoke": "cd load-tests && ./scripts/run-smoke.sh",
+    "test:load:baseline": "cd load-tests && ./scripts/run-baseline.sh",
+    "test:load:stress": "cd load-tests && ./scripts/run-stress.sh",
+    "build": "cd backend && npm run build && cd ../frontend && npm run build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}

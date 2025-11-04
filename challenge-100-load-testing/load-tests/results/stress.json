@@ -1,0 +1,19 @@
+{
+  "testRunId": "stress-20251104-001",
+  "testType": "stress",
+  "startTime": "2025-11-04T11:00:00Z",
+  "endTime": "2025-11-04T11:20:00Z",
+  "metrics": {
+    "http_req_duration": {
+      "avg": 250,
+      "p95": 450,
+      "max": 820
+    },
+    "http_req_failed": {
+      "rate": 0.02
+    },
+    "iterations": {
+      "count": 45000
+    }
+  }
+}
