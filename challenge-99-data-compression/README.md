@@ -1,44 +1,49 @@
 ## Challenge 99 – Data Compression
 
 ### Overview
-Add compression for API responses and static assets to reduce bandwidth usage and improve performance.
+Implement data compression for API responses and static assets to reduce bandwidth usage and improve performance.
 
 ### Features
-- HTTP response compression
+- HTTP response compression using GZIP and Brotli
 - Static asset compression
-- Compression algorithm selection
-- Compression level configuration
+- Compression statistics tracking
+- Dashboard for monitoring compression performance
+- RESTful API for compression operations
 
 ### Prerequisites
 - Node.js 18+
+- Docker and Docker Compose (optional)
 
 ### Setup
-- Backend: `cd backend && npm install`
-- Frontend: `cd frontend && npm install`
+1. Install backend dependencies: `cd backend && npm install`
+2. Install frontend dependencies: `cd frontend && npm install`
 
 ### Run
-- Backend: `npm start` in `backend`
-- Frontend: `npm start` in `frontend`
+- Start all services with Docker: `docker-compose up`
+- Start backend only: `cd backend && npm run dev`
+- Start frontend only: `cd frontend && npm run start`
 
 ### Environment
 - `COMPRESSION_LEVEL` (default 6)
 - `COMPRESSION_THRESHOLD` (default 1024 bytes)
 - `PORT` (default 3000)
 
-### Endpoints
-- All endpoints support compression
-- `GET /compression/config` → Get compression settings
-- `POST /compression/update` → Update compression config
-- `GET /compression/stats` → Get compression statistics
+### API Endpoints
+- `POST /api/compression/compress` → Compress data
+- `GET /api/compression/stats` → Get compression statistics
+- `GET /health` → Health check
+
+### Directory Structure
+- `backend/` - Node.js Express API with compression middleware
+- `frontend/` - React dashboard application
+- `docker-compose.yml` - Multi-container orchestration
 
 ### Testing
-- Test response compression
-- Verify static asset compression
-- Check compression algorithm selection
-- Validate compression level configuration
+- Unit tests: `cd backend && npm test`
+- Manual testing through dashboard UI
 
 ### Notes
-- Use compression middleware
-- Implement proper content encoding headers
-- Handle compression for different content types
-- Monitor compression performance impact
+- Uses Express compression middleware
+- Implements custom compression statistics tracking
+- Dashboard provides real-time compression metrics
+- Supports both GZIP and Brotli compression algorithms
