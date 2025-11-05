@@ -1,25 +1,27 @@
 ## Challenge 97 – Data Backup
 
 ### Overview
-Create automated data backup solutions to protect against data loss and enable recovery.
+Create a comprehensive data backup solution with automated scheduling, compression, encryption, and a web interface for management.
 
 ### Features
 - Automated backup scheduling
-- Backup compression and encryption
+- Backup compression using ZIP
+- Backup encryption (optional)
 - Backup storage management
 - Backup restoration procedures
+- Web-based management interface
+- RESTful API for backup operations
 
 ### Prerequisites
 - Node.js 18+
-- Database for backup
 
 ### Setup
-- Backend: `cd backend && npm install`
-- Frontend: `cd frontend && npm install`
+1. Install backend dependencies: `cd backend && npm install`
+2. Install frontend dependencies: `cd frontend && npm install`
 
 ### Run
-- Backend: `npm start` in `backend`
-- Frontend: `npm start` in `frontend`
+- Start backend: `cd backend && npm run dev`
+- Start frontend: `cd frontend && npm run start`
 
 ### Environment
 - `BACKUP_SCHEDULE` (default 0 2 * * *)
@@ -27,20 +29,24 @@ Create automated data backup solutions to protect against data loss and enable r
 - `BACKUP_ENCRYPTION` (default enabled)
 - `PORT` (default 3000)
 
-### Endpoints
-- `POST /backup` → Create manual backup
-- `GET /backup/list` → List available backups
-- `POST /backup/restore/:id` → Restore from backup
-- `DELETE /backup/:id` → Delete backup
+### API Endpoints
+- `GET /api/backups` → List available backups
+- `POST /api/backups` → Create manual backup
+- `POST /api/backups/:filename/restore` → Restore from backup
+- `DELETE /api/backups/:filename` → Delete backup
+- `GET /health` → Health check
+
+### Directory Structure
+- `backend/` - Node.js Express API with backup service
+- `frontend/` - React dashboard application
+- `backups/` - Backup storage directory
 
 ### Testing
-- Test automated backup scheduling
-- Verify backup compression
-- Check backup encryption
-- Validate restoration procedures
+- Unit tests: `cd backend && npm test`
+- Manual testing through dashboard UI
 
 ### Notes
-- Implement backup retention policies
-- Add backup integrity verification
-- Handle large database backups
-- Support incremental backups
+- Implements backup retention policies
+- Includes backup integrity verification
+- Supports both manual and scheduled backups
+- Provides web interface for backup management
