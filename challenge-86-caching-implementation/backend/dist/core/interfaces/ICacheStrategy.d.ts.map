@@ -1,0 +1,1 @@
+{"version":3,"file":"ICacheStrategy.d.ts","sourceRoot":"","sources":["../../../src/core/interfaces/ICacheStrategy.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,cAAc;IAC7B,MAAM,CAAC,GAAG,KAAK,EAAE,MAAM,EAAE,GAAG,MAAM,CAAC;IACnC,WAAW,CAAC,GAAG,EAAE,MAAM,EAAE,KAAK,EAAE,GAAG,GAAG,OAAO,CAAC;IAC9C,MAAM,CAAC,GAAG,EAAE,MAAM,GAAG,MAAM,CAAC;CAC7B"}

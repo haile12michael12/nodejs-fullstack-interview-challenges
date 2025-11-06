@@ -1,0 +1,1 @@
+{"version":3,"file":"InvalidateCacheUseCase.d.ts","sourceRoot":"","sources":["../../../src/application/usecases/InvalidateCacheUseCase.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,YAAY,EAAE,MAAM,0BAA0B,CAAC;AAExD,qBAAa,sBAAsB;IACrB,OAAO,CAAC,QAAQ,CAAC,YAAY;gBAAZ,YAAY,EAAE,YAAY;IAEjD,OAAO,CAAC,OAAO,CAAC,EAAE,MAAM,GAAG,OAAO,CAAC,IAAI,CAAC;CAS/C"}

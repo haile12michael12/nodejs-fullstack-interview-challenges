@@ -1,0 +1,1 @@
+{"version":3,"file":"WarmCacheUseCase.d.ts","sourceRoot":"","sources":["../../../src/application/usecases/WarmCacheUseCase.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,YAAY,EAAE,MAAM,0BAA0B,CAAC;AAExD,qBAAa,gBAAgB;IACf,OAAO,CAAC,QAAQ,CAAC,YAAY;gBAAZ,YAAY,EAAE,YAAY;IAEjD,OAAO,CAAC,IAAI,EAAE,MAAM,CAAC,MAAM,EAAE,GAAG,CAAC,GAAG,OAAO,CAAC,IAAI,CAAC;CAMxD"}

@@ -1,0 +1,16 @@
+export class AppError extends Error {
+  constructor(
+    public readonly message: string,
+    public readonly statusCode: number = 500,
+    public readonly isOperational: boolean = true
+  ) {
+    super(message);
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+export class CacheError extends AppError {
+  constructor(message: string) {
+    super(`Cache Error: ${message}`, 500);
+  }
+}

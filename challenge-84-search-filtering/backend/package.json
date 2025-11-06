@@ -8,10 +8,22 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "joi": "^18.0.1",
     "sequelize": "^6.32.1",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "winston": "^3.18.3"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
-  }
+    "@types/express": "^5.0.5",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.10.0",
+    "jest": "^30.2.0",
+    "nodemon": "^2.0.22",
+    "supertest": "^7.1.4"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

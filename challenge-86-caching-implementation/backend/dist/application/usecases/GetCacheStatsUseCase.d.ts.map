@@ -1,0 +1,1 @@
+{"version":3,"file":"GetCacheStatsUseCase.d.ts","sourceRoot":"","sources":["../../../src/application/usecases/GetCacheStatsUseCase.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,YAAY,EAAE,MAAM,0BAA0B,CAAC;AACxD,OAAO,EAAE,UAAU,EAAE,MAAM,uCAAuC,CAAC;AAEnE,qBAAa,oBAAoB;IACnB,OAAO,CAAC,QAAQ,CAAC,YAAY;gBAAZ,YAAY,EAAE,YAAY;IAEjD,OAAO,IAAI,OAAO,CAAC,UAAU,CAAC;CAGrC"}

@@ -1,46 +1,73 @@
-## Challenge 86 – Caching Implementation
+# Caching Implementation Challenge
 
-### Overview
-Add caching for performance optimization using in-memory and external caching solutions.
+## Overview
+This challenge implements a full-stack caching solution with both in-memory and Redis caching providers. The application includes a backend API for cache management and a frontend dashboard for monitoring cache performance.
 
-### Features
+## Features
 - In-memory caching with LRU eviction
 - Redis caching implementation
 - Cache invalidation strategies
 - Cache warming and preloading
+- Cache statistics dashboard
+- RESTful API endpoints
 
-### Prerequisites
+## Prerequisites
 - Node.js 18+
-- Redis (optional)
+- Redis (optional, for Redis caching)
 
-### Setup
-- Backend: `cd backend && npm install`
-- Frontend: `cd frontend && npm install`
+## Setup
 
-### Run
-- Backend: `npm start` in `backend`
-- Frontend: `npm start` in `frontend`
+### Backend
+```bash
+cd backend
+npm install
+npm run build
+```
 
-### Environment
-- `CACHE_TTL` (default 300 seconds)
-- `CACHE_MAX_ITEMS` (default 1000)
-- `REDIS_URL` (optional)
-- `PORT` (default 3000)
+### Frontend
+```bash
+cd frontend
+npm install
+npm run build
+```
 
-### Endpoints
-- `GET /cache/stats` → Get cache statistics
-- `POST /cache/invalidate` → Invalidate cache entries
-- `POST /cache/warm` → Preload cache with data
-- All GET endpoints support caching
+## Running the Application
 
-### Testing
-- Test in-memory caching performance
-- Verify Redis caching integration
-- Check cache invalidation strategies
-- Validate cache warming functionality
+### Backend
+```bash
+cd backend
+npm start
+# or for development
+npm run dev
+```
 
-### Notes
-- Implement cache-aside pattern
-- Use proper cache key naming conventions
-- Handle cache stampede scenarios
-- Monitor cache hit/miss ratios
+### Frontend
+```bash
+cd frontend
+npm start
+# or for production
+npm run preview
+```
+
+## Environment Variables
+
+### Backend (.env)
+- `PORT` - Server port (default: 3000)
+- `CACHE_TTL` - Cache time-to-live in seconds (default: 300)
+- `CACHE_MAX_ITEMS` - Maximum items in memory cache (default: 1000)
+- `REDIS_URL` - Redis connection URL (optional)
+
+## API Endpoints
+- `GET /api/cache/stats` - Get cache statistics
+- `POST /api/cache/invalidate` - Invalidate cache entries
+- `POST /api/cache/warm` - Preload cache with data
+- `GET /api/health` - Health check endpoint
+
+## Testing
+- Unit tests for cache providers
+- Integration tests for API endpoints
+
+```bash
+cd backend
+npm test
+```

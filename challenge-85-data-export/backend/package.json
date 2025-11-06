@@ -4,15 +4,29 @@
   "description": "Data export backend",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest"
   },
   "dependencies": {
+    "bull": "^4.16.5",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
     "json2csv": "^5.0.7",
-    "xlsx": "^0.18.5",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.1",
+    "winston": "^3.18.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
-  }
+    "@types/express": "^5.0.5",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.10.0",
+    "jest": "^30.2.0",
+    "nodemon": "^2.0.22",
+    "supertest": "^7.1.4"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
