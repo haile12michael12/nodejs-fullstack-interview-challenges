@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # Backend service with memory profiling capabilities
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+      - "9229:9229"  # Node.js inspector port
+    environment:
+      - PORT=3000
+      - NODE_ENV=development
+      - HEAP_SNAPSHOT_DIR=/app/snapshots
+    volumes:
+      - ./snapshots:/app/snapshots
+    # Enable Node.js inspector and increase memory limits
+    command: [
+      "node",
+      "--inspect=0.0.0.0:9229",
+      "--max-old-space-size=1024",
+      "src/index.js",
+      "start"
+    ]
+
+  # Frontend service
+  frontend:
+    build: ./frontend
+    ports:
+      - "3001:3001"
+    depends_on:
+      - backend
+
+volumes:
+  snapshots:

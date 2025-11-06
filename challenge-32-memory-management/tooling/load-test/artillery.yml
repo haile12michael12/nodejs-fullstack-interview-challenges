@@ -1,0 +1,32 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 20
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Memory Allocation"
+    flow:
+      - loop:
+          - post:
+              url: "/api/allocate"
+              json:
+                size: 1000
+                count: 5
+          - post:
+              url: "/api/leak"
+              json:
+                count: 2
+          - get:
+              url: "/api/memory-stats"
+        count: 10
+
+  - name: "Memory Cleanup"
+    flow:
+      - post:
+          url: "/api/cleanup"
+      - get:
+          url: "/api/memory-stats"

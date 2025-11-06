@@ -1,44 +1,64 @@
 ## Challenge 32 – Memory Management
 
 ### Overview
-Implement efficient memory management techniques and detect memory leaks in Node.js applications.
+Implement comprehensive memory management techniques including leak detection, heap analysis, garbage collection optimization, and efficient data structure usage in Node.js applications.
 
 ### Features
-- Memory leak detection and analysis
-- Heap snapshot analysis
-- Garbage collection optimization
-- Efficient data structure usage
-- Memory pooling techniques
+- Memory leak detection and analysis using memwatch-next
+- Heap snapshot capture and analysis
+- Garbage collection optimization and manual triggering
+- Efficient data structure usage and object pooling
+- Memory statistics monitoring
+- CLI tools for memory management operations
 
 ### Prerequisites
 - Node.js 18+
+- Docker and Docker Compose (optional)
 
 ### Setup
-- Backend: `cd backend && npm install`
-- Frontend: `cd frontend && npm install`
+1. Install backend dependencies: `cd backend && npm install`
+2. Install frontend dependencies: `cd frontend && npm install`
+3. Install global tools: `npm install -g artillery` (for load testing)
 
 ### Run
-- Backend: `npm start` in `backend`
-- Frontend: `npm start` in `frontend`
+- Docker Compose (recommended): `docker-compose up -d`
+- Local development: `./scripts/run-local.sh`
+- Backend only: `cd backend && node --expose-gc src/index.js start`
 
 ### Environment
-- `PORT` (default 3000)
-- `MEMORY_LIMIT` (default 512MB)
+- `PORT` - Server port (default: 3000)
+- `HEAP_SNAPSHOT_DIR` - Directory for heap snapshots (default: ./snapshots)
+- `MAX_HEAP_SIZE` - Maximum heap size in MB (default: 512)
+- `GC_INTERVAL` - Garbage collection interval in ms (default: 30000)
 
-### Endpoints
-- `GET /memory-stats` → Get current memory usage statistics
-- `POST /allocate` → Allocate memory (for testing)
-- `POST /leak` → Intentionally create a memory leak (for testing)
-- `POST /cleanup` → Force garbage collection
+### API Endpoints
+- `GET /api/memory-stats` → Get current memory usage statistics
+- `POST /api/allocate` → Allocate memory (for testing)
+- `POST /api/leak` → Intentionally create a memory leak (for testing)
+- `POST /api/cleanup` → Force garbage collection
+- `GET /health` → Health check endpoint
+
+### CLI Commands
+- `node src/index.js start` → Start the Express server
+- `node src/index.js snapshot` → Capture heap snapshot
+- `node src/index.js profile` → Run memory profiling
+
+### Directory Structure
+- `backend/` - Node.js Express application with memory management features
+- `frontend/` - React dashboard for monitoring memory usage
+- `tooling/` - Load testing, profiling, and analysis tools
+- `docs/` - Documentation on memory management techniques
+- `scripts/` - Automation scripts for common tasks
 
 ### Testing
-- Use heap snapshots to identify memory leaks
-- Monitor memory usage over time
-- Test with large data sets
-- Implement memory pooling for object reuse
+- Smoke tests: `cd backend && npm test`
+- Load testing: `./scripts/produce-load.sh`
+- Memory leak detection: `./tooling/load-test/scripts/leak-run.sh`
+- Heap analysis: `node tooling/analyze/heap-analyze.js <snapshot-file>`
 
 ### Notes
-- Use weak references where appropriate
-- Implement proper cleanup for event listeners
+- Run with `--expose-gc` flag to enable manual garbage collection
+- Use weak references where appropriate to prevent memory leaks
+- Implement proper cleanup for event listeners and intervals
 - Use object pooling for frequently created objects
-- Monitor memory growth patterns
+- Monitor memory growth patterns with heap snapshots
