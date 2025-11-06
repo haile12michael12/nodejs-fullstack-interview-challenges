@@ -10,8 +10,9 @@
     "migrate:undo": "sequelize-cli db:migrate:undo"
   },
   "dependencies": {
-    "sequelize": "^6.32.1",
+    "sequelize": "^6.37.7",
     "sequelize-cli": "^6.6.1",
+    "sqlite3": "^5.1.7",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

@@ -1,43 +1,49 @@
 ## Challenge 91 – Health Checks
 
 ### Overview
-Add health check endpoints for monitoring application status and dependencies.
+Implement comprehensive health checking for applications including system metrics, dependency checks, and readiness/liveness probes.
 
 ### Features
-- Application health monitoring
-- Dependency health checks
-- Detailed health status reporting
-- Kubernetes readiness/liveness probes
+- Basic health checks
+- Detailed health information
+- Dependency monitoring (database, Redis, external APIs)
+- Readiness and liveness probes
+- Configurable health check intervals and timeouts
 
 ### Prerequisites
 - Node.js 18+
 
 ### Setup
-- Backend: `cd backend && npm install`
-- Frontend: `cd frontend && npm install`
+1. Install backend dependencies: `cd backend && npm install`
+2. Install frontend dependencies: `cd frontend && npm install`
 
 ### Run
-- Backend: `npm start` in `backend`
-- Frontend: `npm start` in `frontend`
+- Start backend: `cd backend && npm run dev`
+- Start frontend: `cd frontend && npm run start`
 
 ### Environment
-- `HEALTH_CHECK_TIMEOUT` (default 5000ms)
-- `PORT` (default 3000)
+- `HEALTH_CHECK_INTERVAL` - Health check interval in ms (default: 30000)
+- `HEALTH_CHECK_TIMEOUT` - Health check timeout in ms (default: 5000)
+- `PORT` - Server port (default: 3000)
+- `DB_HOST` - Database host (default: localhost)
 
-### Endpoints
-- `GET /health` → Basic health check
-- `GET /health/details` → Detailed health status
-- `GET /ready` → Readiness probe
-- `GET /live` → Liveness probe
+### API Endpoints
+- `GET /health` - Basic health check
+- `GET /api/health` - Health status endpoint
+- `GET /api/health/detailed` - Detailed health information
+- `GET /api/health/ready` - Readiness probe
+- `GET /api/health/alive` - Liveness probe
+
+### Directory Structure
+- `backend/` - Node.js Express API with health check service
+- `frontend/` - React dashboard application
 
 ### Testing
-- Test basic health check endpoint
-- Verify dependency health checks
-- Check health status reporting
-- Validate Kubernetes probe endpoints
+- Unit tests: `cd backend && npm test`
+- Manual testing through dashboard UI
 
 ### Notes
-- Implement health checks for database connections
-- Add health checks for external services
-- Use appropriate HTTP status codes
-- Include timestamp and version information
+- Implements health checks for database connections
+- Adds health checks for external services
+- Uses appropriate HTTP status codes
+- Includes timestamp and version information

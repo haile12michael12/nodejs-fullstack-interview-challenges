@@ -8,6 +8,7 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "prometheus-gc-stats": "^1.1.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
