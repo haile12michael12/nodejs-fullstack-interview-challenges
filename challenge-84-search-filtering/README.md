@@ -1,45 +1,159 @@
-## Challenge 84 – Search and Filtering
+# Search and Filtering Implementation
 
-### Overview
-Build search and filtering functionality to help users find relevant data efficiently.
+## Overview
+This project implements a full-stack search and filtering solution with both backend and frontend components. The backend provides RESTful APIs for searching and filtering data, while the frontend offers a user-friendly interface for interacting with these features.
 
-### Features
-- Full-text search implementation
-- Field-based filtering
-- Sorting and ordering
-- Search result ranking
+## Features
+- Full-text search across multiple fields
+- Field-based filtering (category, price range, etc.)
+- Sorting and ordering capabilities
+- Pagination for large result sets
+- Advanced search with multiple criteria
+- Responsive UI with React and Tailwind CSS
 
-### Prerequisites
-- Node.js 18+
-- Database with searchable data
+## Project Structure
+```
+search-filtering/
+│
+├── backend/
+│   ├── src/
+│   │   ├── app.js
+│   │   ├── server.js
+│   │   ├── config/
+│   │   │   ├── db.js
+│   │   │   └── env.js
+│   │   ├── modules/
+│   │   │   └── search/
+│   │   │       ├── search.controller.js
+│   │   │       ├── search.service.js
+│   │   │       ├── search.repository.js
+│   │   │       ├── search.routes.js
+│   │   │       └── search.validator.js
+│   │   ├── core/
+│   │   │   ├── http/
+│   │   │   │   ├── response.js
+│   │   │   │   └── error-handler.js
+│   │   │   ├── utils/
+│   │   │   │   ├── logger.js
+│   │   │   │   └── sanitizer.js
+│   │   │   └── middleware/
+│   │   │       ├── validateRequest.js
+│   │   │       └── errorMiddleware.js
+│   │   └── routes/
+│   │       └── index.js
+│   ├── tests/
+│   │   └── search.test.js
+│   ├── package.json
+│   └── .env
+│
+├── frontend/
+│   ├── src/
+│   │   ├── pages/
+│   │   │   ├── index.jsx
+│   │   │   ├── search.jsx
+│   │   ├── components/
+│   │   │   ├── SearchBar/
+│   │   │   │   └── SearchBar.jsx
+│   │   │   ├── FilterPanel/
+│   │   │   │   └── FilterPanel.jsx
+│   │   │   ├── SortMenu/
+│   │   │   │   └── SortMenu.jsx
+│   │   │   ├── ResultList/
+│   │   │   │   └── ResultList.jsx
+│   │   │   └── Pagination.jsx
+│   │   ├── hooks/
+│   │   │   └── useSearch.js
+│   │   ├── utils/
+│   │   │   └── apiClient.js
+│   │   ├── styles/
+│   │   │   └── globals.css
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   └── .env.local
+│
+├── docker-compose.yml
+└── README.md
+```
 
-### Setup
-- Backend: `cd backend && npm install`
-- Frontend: `cd frontend && npm install`
+## Setup and Installation
 
-### Run
-- Backend: `npm start` in `backend`
-- Frontend: `npm start` in `frontend`
+### Backend
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
 
-### Environment
-- `SEARCH_MIN_LENGTH` (default 3)
-- `SEARCH_MAX_RESULTS` (default 100)
-- `PORT` (default 3000)
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-### Endpoints
-- `GET /search?q=query` → Search across all fields
-- `GET /items?filter[field]=value` → Filter by field
-- `GET /items?sort=field&order=asc` → Sort results
-- `GET /search/advanced` → Advanced search with multiple criteria
+3. Start the server:
+   ```bash
+   npm start
+   ```
 
-### Testing
-- Test full-text search functionality
-- Verify field-based filtering
-- Check sorting and ordering
-- Validate search result pagination
+The backend will run on port 3000.
 
-### Notes
-- Implement database-level search when possible
-- Add indexing for frequently searched fields
-- Support partial matching and wildcards
-- Handle special characters in search queries
+### Frontend
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm start
+   ```
+
+The frontend will run on port 3001.
+
+## API Endpoints
+
+### Search
+- `GET /search?q=query` - Search across all fields
+- `GET /search?filter[field]=value` - Filter by field
+- `GET /search?sort=field&order=asc` - Sort results
+- `POST /search/advanced` - Advanced search with multiple criteria
+
+### Health Check
+- `GET /health` - Check if the server is running
+
+## Environment Variables
+
+### Backend
+- `PORT` (default: 3000) - Server port
+- `SEARCH_MIN_LENGTH` (default: 3) - Minimum search query length
+- `SEARCH_MAX_RESULTS` (default: 100) - Maximum results per page
+
+### Frontend
+- `VITE_API_BASE_URL` (default: http://localhost:3000) - Backend API base URL
+
+## Running with Docker
+To run both services using Docker Compose:
+
+```bash
+docker-compose up
+```
+
+This will start both the backend (port 3000) and frontend (port 3001).
+
+## Testing
+To run backend tests:
+
+```bash
+cd backend
+npm test
+```
+
+## Technologies Used
+- **Backend**: Node.js, Express, Joi, Winston
+- **Frontend**: React, Vite, Tailwind CSS, Axios
+- **Testing**: Jest, Supertest
+- **Deployment**: Docker, Docker Compose

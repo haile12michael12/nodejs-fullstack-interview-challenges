@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Logs
+logs
+*.log
+
+# Environment files
+.env
+.env.local
+
+# Build outputs
+dist/
+build/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Uploads directory
+backend/uploads/
+
+# Docker
+docker-compose.override.yml
