@@ -2,16 +2,21 @@
   "name": "challenge-79-backend",
   "version": "1.0.0",
   "description": "CORS security backend",
-  "main": "server.js",
+  "main": "src/core/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node src/core/server.js",
+    "dev": "nodemon src/core/server.js",
+    "test": "jest"
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "jest": "^30.2.0",
+    "nodemon": "^2.0.22",
+    "supertest": "^7.1.4"
   }
 }

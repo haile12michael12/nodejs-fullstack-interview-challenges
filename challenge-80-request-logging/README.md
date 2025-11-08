@@ -1,44 +1,54 @@
-## Challenge 80 – Request Logging
+# Challenge 80 – Request Logging
 
-### Overview
+## Overview
 Add request logging and monitoring to track API usage, performance, and debugging information.
 
-### Features
+## Features
 - HTTP request/response logging
 - Performance metrics and timing
 - Request ID tracking
 - Log filtering and search
+- Real-time dashboard with charts
 
-### Prerequisites
+## Prerequisites
 - Node.js 18+
 
-### Setup
-- Backend: `cd backend && npm install`
-- Frontend: `cd frontend && npm install`
+## Setup
+1. Backend: `cd backend && npm install`
+2. Frontend: `cd frontend && npm install`
 
-### Run
-- Backend: `npm start` in `backend`
-- Frontend: `npm start` in `frontend`
+## Run
+1. Start the backend: `cd backend && npm start`
+2. Start the frontend: `cd frontend && npm start`
 
-### Environment
+## Environment
 - `LOG_LEVEL` (default info)
 - `REQUEST_LOG_FORMAT` (default combined)
 - `PORT` (default 3000)
 
-### Endpoints
-- `GET /logs/requests` → Get request logs
-- `GET /logs/requests/:id` → Get specific request log
-- `POST /logs/search` → Search logs by criteria
+## Endpoints
+- `GET /api/logs/requests` → Get request logs
+- `GET /api/logs/requests/:id` → Get specific request log
+- `POST /api/logs/search` → Search logs by criteria
+- `GET /api/logs/stats` → Get log statistics
+- `GET /api/logs/performance` → Get performance data
 - All API endpoints generate logs
 
-### Testing
+## Testing
 - Verify request logging middleware
 - Test log format customization
 - Check performance timing metrics
 - Validate log filtering and search
 
-### Notes
-- Use morgan or similar for HTTP logging
-- Implement request ID generation and tracking
-- Add response time measurements
-- Support structured logging formats
+## Notes
+- Uses morgan for HTTP logging
+- Implements request ID generation and tracking
+- Adds response time measurements
+- Supports structured logging formats
+- Frontend dashboard with real-time charts
+
+## Docker
+To run with Docker:
+1. `docker-compose up --build`
+2. Access frontend at http://localhost:3001
+3. Access backend API at http://localhost:3000

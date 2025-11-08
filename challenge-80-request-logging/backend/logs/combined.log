@@ -1,0 +1,28 @@
+2025-11-07T08:58:43.899Z [info]: Server is running on port 3000
+2025-11-07T09:04:18.867Z [info]: Incoming request {"requestId":"cab954b6-2bbb-4032-bda5-6d95d168c0c1","method":"GET","url":"/api/health","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.7019"}
+2025-11-07T09:05:28.422Z [info]: Incoming request {"requestId":"11ab3d70-9ecd-444e-94f7-8f4dfe944c1f","method":"GET","url":"/api/health","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:05:28.425Z [info]: Incoming request {"requestId":"01375a29-e9f8-4a8f-b8a4-298d874baff3","method":"GET","url":"/api/health","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:05:28.440Z [info]: Incoming request {"requestId":"5ab6d73e-e77e-4dab-a366-c705f33ccebc","method":"GET","url":"/api/logs/requests","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:05:28.439Z [info]: Incoming request {"requestId":"ed8ab3f8-2cb4-4d13-8fc0-0ecc3af43723","method":"GET","url":"/api/health","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:05:28.445Z [info]: Incoming request {"requestId":"test-request-id-123","method":"GET","url":"/api/health","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:05:28.447Z [info]: Incoming request {"requestId":"4028ce5e-ebbd-4906-9e17-5f918981553f","method":"GET","url":"/api/logs/requests?method=GET","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:05:28.456Z [info]: Incoming request {"requestId":"137da0c8-db02-47c1-88c2-aaffe5daea24","method":"GET","url":"/api/logs/requests/999999","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:05:28.455Z [info]: Incoming request {"requestId":"8eaa43a2-45bf-4bb7-9562-bf4afcf58d44","method":"GET","url":"/api/non-existent-endpoint","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:05:28.456Z [warn]: Route not found {"requestId":"8eaa43a2-45bf-4bb7-9562-bf4afcf58d44","method":"GET","url":"/api/non-existent-endpoint"}
+2025-11-07T09:05:28.462Z [info]: Incoming request {"requestId":"d7d39cf1-eac0-4c6f-ac69-1f6d2625e7e4","method":"GET","url":"/api/health","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:05:28.477Z [info]: Incoming request {"requestId":"0b295f9a-f07d-4302-a00a-9c6168bd74e9","method":"POST","url":"/api/logs/search","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:05:28.483Z [info]: Incoming request {"requestId":"96005706-ba9b-4e7a-8d3f-e4badcf9d9e0","method":"GET","url":"/api/logs/stats","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:05:28.490Z [info]: Incoming request {"requestId":"23b09cb7-fe02-4587-9f5d-2fd76d96d070","method":"GET","url":"/api/logs/performance","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:33:13.145Z [info]: Incoming request {"requestId":"c5fc5e79-776e-4acf-b881-2b7a4a6b55b6","method":"GET","url":"/api/health","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:33:13.145Z [info]: Incoming request {"requestId":"fec38239-d93b-4178-a19f-6ceb17ca836b","method":"GET","url":"/api/health","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:33:13.167Z [info]: Incoming request {"requestId":"9895d64f-a1c9-4e9b-a2c3-831efbf3400e","method":"GET","url":"/api/logs/requests","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:33:13.168Z [info]: Incoming request {"requestId":"13fca14b-4375-455e-a548-7aef9f3cc5c1","method":"GET","url":"/api/health","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:33:13.174Z [info]: Incoming request {"requestId":"test-request-id-123","method":"GET","url":"/api/health","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:33:13.174Z [info]: Incoming request {"requestId":"a0ac305f-6962-4fd0-94a8-642f7db326d2","method":"GET","url":"/api/logs/requests?method=GET","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:33:13.184Z [info]: Incoming request {"requestId":"05dccbfb-e06d-4125-b125-a40211e2c58d","method":"GET","url":"/api/non-existent-endpoint","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:33:13.185Z [info]: Incoming request {"requestId":"5ca296c0-fc8e-47d8-83a7-91bcc8a5be13","method":"GET","url":"/api/logs/requests/999999","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:33:13.186Z [warn]: Route not found {"requestId":"05dccbfb-e06d-4125-b125-a40211e2c58d","method":"GET","url":"/api/non-existent-endpoint"}
+2025-11-07T09:33:13.191Z [info]: Incoming request {"requestId":"9a2d41c8-3e95-4545-ace0-77dd95f719eb","method":"GET","url":"/api/health","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:33:13.210Z [info]: Incoming request {"requestId":"30eac843-c0a8-4927-99c6-be7b0e515d61","method":"POST","url":"/api/logs/search","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:33:13.235Z [info]: Incoming request {"requestId":"458f7305-8420-4320-9263-9d2b4aac8591","method":"GET","url":"/api/logs/stats","ip":"::ffff:127.0.0.1"}
+2025-11-07T09:33:13.273Z [info]: Incoming request {"requestId":"2437edd1-4d2d-451b-afa3-e2f71e444985","method":"GET","url":"/api/logs/performance","ip":"::ffff:127.0.0.1"}

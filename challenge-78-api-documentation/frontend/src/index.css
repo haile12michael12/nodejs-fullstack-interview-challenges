@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Custom styles for Swagger UI */
+.swagger-ui-wrapper {
+  background-color: #fff;
+}
+
+.swagger-ui-wrapper .swagger-ui {
+  background-color: #fff;
+}
+
+.swagger-ui-wrapper .swagger-ui .info {
+  margin: 20px 0;
+}
+
+.swagger-ui-wrapper .swagger-ui .opblock {
+  margin: 0 0 15px;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+}
+
+.swagger-ui-wrapper .swagger-ui .opblock-summary {
+  padding: 10px;
+}
+
+.swagger-ui-wrapper .swagger-ui .opblock-body {
+  padding: 20px;
+}

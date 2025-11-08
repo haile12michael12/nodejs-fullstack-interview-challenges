@@ -1,0 +1,21 @@
+2025-11-07T12:02:10.639Z [INFO]: Logger initialized for development environment
+2025-11-07T12:02:10.642Z [INFO]: Log level: debug
+2025-11-07T12:33:37.428Z [INFO]: Logger initialized for development environment
+2025-11-07T12:33:37.442Z [INFO]: Log level: debug
+{"level":"info","message":"Logger initialized for test environment","timestamp":"2025-11-07T12:34:20.659Z"}
+{"level":"info","message":"Log level: debug","timestamp":"2025-11-07T12:34:20.667Z"}
+{"level":"info","message":"Logger initialized for test environment","timestamp":"2025-11-07T12:36:08.937Z"}
+{"level":"info","message":"Log level: debug","timestamp":"2025-11-07T12:36:08.943Z"}
+{"level":"info","message":"Logger initialized for test environment","timestamp":"2025-11-07T12:36:59.295Z"}
+{"level":"info","message":"Log level: debug","timestamp":"2025-11-07T12:36:59.305Z"}
+2025-11-07T12:43:42.597Z [INFO]: Logger initialized for development environment
+2025-11-07T12:43:42.608Z [INFO]: Log level: debug
+2025-11-07T12:43:42.616Z [INFO]: Starting application...
+2025-11-07T12:43:42.616Z [INFO]: Environment: development
+2025-11-07T12:43:42.617Z [DEBUG]: Configuration:
+2025-11-07T12:43:42.618Z [INFO]: Connecting to database...
+2025-11-07T12:43:42.718Z [INFO]: Connected to myapp_dev database at localhost:5432
+2025-11-07T12:43:42.728Z [INFO]: Application started successfully
+2025-11-07T12:43:42.728Z [INFO]: Server running on port 3000 in development mode
+{"level":"info","message":"Logger initialized for test environment","timestamp":"2025-11-08T05:40:00.499Z"}
+{"level":"info","message":"Log level: debug","timestamp":"2025-11-08T05:40:00.518Z"}

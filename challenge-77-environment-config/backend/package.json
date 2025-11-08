@@ -2,17 +2,25 @@
   "name": "challenge-77-backend",
   "version": "1.0.0",
   "description": "Environment configuration backend",
-  "main": "server.js",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest",
+    "env:check": "node src/interfaces/cli/envCheck.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^16.1.4",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
     "joi": "^17.9.2",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "winston": "^3.18.3"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "jest": "^30.2.0",
+    "nodemon": "^2.0.22",
+    "supertest": "^7.1.4"
   }
 }
