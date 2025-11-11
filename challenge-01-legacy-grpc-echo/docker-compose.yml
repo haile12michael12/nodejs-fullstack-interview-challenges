@@ -12,14 +12,11 @@ services:
     command: npm start
 
   proxy:
-    build:
-      context: ./backend
+    image: envoyproxy/envoy:v1.20-latest
     ports:
       - "8080:8080"
     volumes:
-      - ./backend:/app
-      - /app/node_modules
-    command: npm run start:proxy
+      - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml
     depends_on:
       - backend
 
@@ -31,7 +28,7 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    command: npm start
+    command: npm run dev
     depends_on:
       - proxy
     environment:

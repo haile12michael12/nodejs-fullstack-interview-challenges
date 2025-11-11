@@ -2,67 +2,22 @@ const http = require('http');
 const url = require('url');
 const fs = require('fs');
 const path = require('path');
+const { SSEManager } = require('./utils/sse');
+const { Logger } = require('./logger');
+const serverConfig = require('./config/serverConfig');
 
-const PORT = process.env.PORT || 3000;
+const PORT = serverConfig.port;
 
-// Store connected SSE clients
-const sseClients = new Set();
-
-// Log generation
-let logCounter = 0;
-const logTypes = ['INFO', 'WARN', 'ERROR', 'DEBUG'];
-const logMessages = [
-  'User login successful',
-  'Database connection established',
-  'Cache miss for key: user:123',
-  'API request processed in 45ms',
-  'File upload completed',
-  'Memory usage: 75%',
-  'Background job started',
-  'Email sent successfully',
-  'Invalid token provided',
-  'Rate limit exceeded',
-  'Configuration reloaded',
-  'Session expired'
-];
-
-function generateRandomLog() {
-  const timestamp = new Date().toISOString();
-  const type = logTypes[Math.floor(Math.random() * logTypes.length)];
-  const message = logMessages[Math.floor(Math.random() * logMessages.length)];
-  const id = ++logCounter;
-  
-  return {
-    id,
-    timestamp,
-    type,
-    message,
-    level: type === 'ERROR' ? 'error' : type === 'WARN' ? 'warn' : 'info'
-  };
-}
-
-function sendSSEMessage(client, data) {
-  try {
-    const sseData = `data: ${JSON.stringify(data)}\n\n`;
-    client.write(sseData);
-  } catch (error) {
-    console.error('Error sending SSE message:', error);
-    sseClients.delete(client);
-  }
-}
-
-function broadcastLog(logEntry) {
-  sseClients.forEach(client => {
-    sendSSEMessage(client, logEntry);
-  });
-}
+// Initialize managers
+const sseManager = new SSEManager();
+const logger = new Logger();
 
 // Generate logs periodically
 setInterval(() => {
-  const logEntry = generateRandomLog();
-  console.log(`[${logEntry.timestamp}] ${logEntry.type}: ${logEntry.message}`);
-  broadcastLog(logEntry);
-}, 2000 + Math.random() * 3000); // Random interval between 2-5 seconds
+  const logEntry = logger.generateRandomLog();
+  logger.logToFile(logEntry);
+  sseManager.broadcast(logEntry);
+}, serverConfig.logIntervalMin + Math.random() * (serverConfig.logIntervalMax - serverConfig.logIntervalMin));
 
 // Utility functions
 function sendResponse(res, statusCode, data, contentType = 'application/json') {
@@ -93,35 +48,35 @@ function handleEvents(req, res) {
     message: 'Connected to live log stream',
     level: 'info'
   };
-  sendSSEMessage(res, welcomeMessage);
+  sseManager.sendToClient(res, welcomeMessage);
 
-  // Add client to the set
-  sseClients.add(res);
+  // Add client to the manager
+  sseManager.addClient(res);
 
   // Handle client disconnect
   req.on('close', () => {
-    sseClients.delete(res);
+    sseManager.removeClient(res);
   });
 
   req.on('error', () => {
-    sseClients.delete(res);
+    sseManager.removeClient(res);
   });
 
   // Send heartbeat every 30 seconds
   const heartbeat = setInterval(() => {
-    if (sseClients.has(res)) {
-      sendSSEMessage(res, { type: 'heartbeat', timestamp: new Date().toISOString() });
+    if (sseManager.clients.has(res)) {
+      sseManager.sendHeartbeat();
     } else {
       clearInterval(heartbeat);
     }
-  }, 30000);
+  }, serverConfig.heartbeatInterval);
 }
 
 function handleLogs(req, res) {
   // Generate a few recent logs for the initial display
   const recentLogs = [];
   for (let i = 0; i < 10; i++) {
-    recentLogs.unshift(generateRandomLog());
+    recentLogs.unshift(logger.generateRandomLog());
   }
   
   sendResponse(res, 200, { logs: recentLogs });
@@ -129,17 +84,19 @@ function handleLogs(req, res) {
 
 function handleTrigger(req, res) {
   // Manually trigger a log entry
-  const logEntry = generateRandomLog();
-  console.log(`[MANUAL TRIGGER] [${logEntry.timestamp}] ${logEntry.type}: ${logEntry.message}`);
-  broadcastLog(logEntry);
+  const logEntry = logger.generateRandomLog();
+  const logMessage = `[MANUAL TRIGGER] [${logEntry.timestamp}] ${logEntry.type}: ${logEntry.message}`;
+  console.log(logMessage);
+  logger.logToFile(logEntry);
+  sseManager.broadcast(logEntry);
   
   sendResponse(res, 200, { message: 'Log triggered', log: logEntry });
 }
 
 function handleStats(req, res) {
   const stats = {
-    connectedClients: sseClients.size,
-    totalLogs: logCounter,
+    connectedClients: sseManager.getClientCount(),
+    totalLogs: logger.getLogCounter(),
     uptime: process.uptime(),
     memoryUsage: process.memoryUsage()
   };
@@ -215,5 +172,5 @@ server.listen(PORT, () => {
   console.log(`  GET /logs - Get recent logs`);
   console.log(`  POST /trigger - Manually trigger a log entry`);
   console.log(`  GET /stats - Server statistics`);
-  console.log(`\nLogs will be generated automatically every 2-5 seconds.`);
+  console.log(`\nLogs will be generated automatically every ${serverConfig.logIntervalMin/1000}-${serverConfig.logIntervalMax/1000} seconds.`);
 });

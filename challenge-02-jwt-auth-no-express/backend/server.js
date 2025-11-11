@@ -1,13 +1,22 @@
 const http = require('http');
-const config = require('./src/config');
-const Router = require('./src/router');
-const { sendError } = require('./src/utils/response');
+const config = require('./config');
+const Router = require('./core/router');
+const { sendError } = require('./core/response');
+const { setupRoutes } = require('./routes');
+const corsMiddleware = require('./middleware/cors');
+const rateLimiter = require('./middleware/rateLimiter');
+const logger = require('./utils/logger');
 
 // Create router instance
 const router = new Router();
 
+// Setup middleware
+router.use(logger);
+router.use(corsMiddleware);
+router.use(rateLimiter());
+
 // Setup routes
-router.setupRoutes();
+setupRoutes(router);
 
 // Main server
 const server = http.createServer(async (req, res) => {
@@ -24,8 +33,9 @@ server.listen(config.port, () => {
   console.log(`Available endpoints:`);
   console.log(`  POST /login - Login with username/password`);
   console.log(`  POST /refresh - Refresh access token`);
+  console.log(`  POST /logout - Logout`);
   console.log(`  GET /me - Get current user (requires token)`);
-  console.log(`  GET /protected - Protected endpoint (requires token)`);
+  console.log(`  GET /users - Get all users (requires token)`);
   console.log(`\nTest users:`);
   console.log(`  admin / password123`);
   console.log(`  user / user123`);
