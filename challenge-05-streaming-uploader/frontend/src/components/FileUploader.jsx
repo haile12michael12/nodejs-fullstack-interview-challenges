@@ -1,179 +1,108 @@
-import React, { useState, useEffect, useRef } from 'react'
+// File uploader component
+import React, { useState, useRef } from 'react';
 
-const API_BASE = '/api'
-
-function App() {
-  const [selectedFile, setSelectedFile] = useState(null)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadResult, setUploadResult] = useState(null)
-  const [error, setError] = useState('')
-  const [files, setFiles] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isDragOver, setIsDragOver] = useState(false)
+const FileUploader = ({ onFileUpload, onFileDelete, files, loading, error }) => {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadResult, setUploadResult] = useState(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   
-  const fileInputRef = useRef(null)
-
-  useEffect(() => {
-    fetchFiles()
-  }, [])
-
-  const fetchFiles = async () => {
-    setIsLoading(true)
-    try {
-      const response = await fetch(`${API_BASE}/files`)
-      if (response.ok) {
-        const data = await response.json()
-        setFiles(data.files || [])
-      } else {
-        setError('Failed to fetch files')
-      }
-    } catch (error) {
-      setError('Network error while fetching files')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const fileInputRef = useRef(null);
 
   const handleFileSelect = (file) => {
-    if (!file) return
+    if (!file) return;
 
     // Validate file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024 // 10MB
+    const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      setError('File size must be less than 10MB')
-      return
+      //setError('File size must be less than 10MB');
+      alert('File size must be less than 10MB');
+      return;
     }
 
-    setSelectedFile(file)
-    setError('')
-    setUploadResult(null)
-  }
+    setSelectedFile(file);
+    setUploadResult(null);
+  };
 
   const handleFileInputChange = (e) => {
-    const file = e.target.files[0]
-    handleFileSelect(file)
-  }
+    const file = e.target.files[0];
+    handleFileSelect(file);
+  };
 
   const handleDrop = (e) => {
-    e.preventDefault()
-    setIsDragOver(false)
+    e.preventDefault();
+    setIsDragOver(false);
     
-    const files = e.dataTransfer.files
+    const files = e.dataTransfer.files;
     if (files.length > 0) {
-      handleFileSelect(files[0])
+      handleFileSelect(files[0]);
     }
-  }
+  };
 
   const handleDragOver = (e) => {
-    e.preventDefault()
-    setIsDragOver(true)
-  }
+    e.preventDefault();
+    setIsDragOver(true);
+  };
 
   const handleDragLeave = (e) => {
-    e.preventDefault()
-    setIsDragOver(false)
-  }
+    e.preventDefault();
+    setIsDragOver(false);
+  };
 
   const uploadFile = async () => {
-    if (!selectedFile) return
+    if (!selectedFile) return;
 
-    setIsUploading(true)
-    setUploadProgress(0)
-    setError('')
-
-    const formData = new FormData()
-    formData.append('file', selectedFile)
+    setIsUploading(true);
+    setUploadProgress(0);
 
     try {
-      const xhr = new XMLHttpRequest()
+      const result = await onFileUpload(selectedFile, (progress) => {
+        setUploadProgress(progress);
+      });
       
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const progress = Math.round((e.loaded / e.total) * 100)
-          setUploadProgress(progress)
-        }
-      }
-
-      xhr.onload = () => {
-        setIsUploading(false)
-        setUploadProgress(0)
-
-        if (xhr.status === 200) {
-          const result = JSON.parse(xhr.responseText)
-          setUploadResult(result)
-          setSelectedFile(null)
-          fetchFiles() // Refresh file list
-        } else {
-          const error = JSON.parse(xhr.responseText)
-          setError(error.error || 'Upload failed')
-        }
-      }
-
-      xhr.onerror = () => {
-        setIsUploading(false)
-        setUploadProgress(0)
-        setError('Network error during upload')
-      }
-
-      xhr.open('POST', `${API_BASE}/upload`)
-      xhr.send(formData)
-
-    } catch (error) {
-      setIsUploading(false)
-      setUploadProgress(0)
-      setError('Upload failed')
-    }
-  }
-
-  const deleteFile = async (filename) => {
-    if (!confirm('Are you sure you want to delete this file?')) return
-
-    try {
-      const response = await fetch(`${API_BASE}/delete?filename=${encodeURIComponent(filename)}`, {
-        method: 'DELETE'
-      })
-
-      if (response.ok) {
-        fetchFiles() // Refresh file list
-      } else {
-        const error = await response.json()
-        setError(error.error || 'Failed to delete file')
+      setUploadResult(result);
+      setSelectedFile(null);
+      
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
     } catch (error) {
-      setError('Network error while deleting file')
+      console.error('Upload failed:', error);
+      //setError('Upload failed');
+      alert('Upload failed: ' + error.message);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
     }
-  }
-
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString()
-  }
-
-  const openUploadArea = () => {
-    fileInputRef.current?.click()
-  }
+  };
 
   const clearSelection = () => {
-    setSelectedFile(null)
-    setUploadResult(null)
-    setError('')
+    setSelectedFile(null);
+    setUploadResult(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+      fileInputRef.current.value = '';
     }
-  }
+  };
+
+  const openUploadArea = () => {
+    fileInputRef.current?.click();
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString();
+  };
 
   return (
-    <div className="container">
-      <h1>File Uploader with Security Scan</h1>
-      
+    <div className="file-uploader">
       <div className="upload-section">
         <div 
           className={`upload-area ${isDragOver ? 'dragover' : ''} ${selectedFile ? 'has-file' : ''}`}
@@ -269,19 +198,17 @@ function App() {
             </div>
           </div>
         )}
-
-        {error && <div className="error">{error}</div>}
       </div>
 
       <div className="files-section">
         <div className="files-header">
           <h2>Uploaded Files</h2>
-          <button className="upload-button secondary" onClick={fetchFiles}>
+          <button className="upload-button secondary" onClick={() => window.location.reload()}>
             Refresh
           </button>
         </div>
 
-        {isLoading ? (
+        {loading ? (
           <div className="loading">
             <div className="spinner"></div>
             <span>Loading files...</span>
@@ -302,7 +229,7 @@ function App() {
                 <div className="file-item-actions">
                   <button 
                     className="danger"
-                    onClick={() => deleteFile(file.name)}
+                    onClick={() => onFileDelete(file.name)}
                   >
                     Delete
                   </button>
@@ -313,7 +240,7 @@ function App() {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default FileUploader;
