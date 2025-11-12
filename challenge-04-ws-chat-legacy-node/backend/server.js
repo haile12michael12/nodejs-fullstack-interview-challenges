@@ -1,12 +1,10 @@
 const WebSocket = require('ws');
 const http = require('http');
 const url = require('url');
+const { rooms, createRoom, addClientToRoom, removeClientFromRoom, broadcastToRoom, getRoomList, getUserList } = require('./rooms');
+const { registerUser, removeUser, findUserByUsername } = require('./users');
 
 const PORT = process.env.PORT || 3000;
-
-// Chat rooms and users
-const rooms = new Map();
-const users = new Map();
 
 // Message types
 const MESSAGE_TYPES = {
@@ -20,10 +18,6 @@ const MESSAGE_TYPES = {
 };
 
 // Utility functions
-function generateUserId() {
-  return 'user_' + Math.random().toString(36).substr(2, 9);
-}
-
 function sanitizeMessage(message) {
   return message.replace(/[<>]/g, '').substring(0, 1000);
 }
@@ -37,31 +31,6 @@ function createMessage(type, data = {}, error = null) {
   });
 }
 
-function broadcastToRoom(roomName, message, excludeUser = null) {
-  const room = rooms.get(roomName);
-  if (!room) return;
-
-  room.forEach(user => {
-    if (user !== excludeUser && user.readyState === WebSocket.OPEN) {
-      user.send(message);
-    }
-  });
-}
-
-function getRoomList() {
-  return Array.from(rooms.keys());
-}
-
-function getUserList(roomName) {
-  const room = rooms.get(roomName);
-  if (!room) return [];
-  
-  return Array.from(room).map(user => ({
-    id: user.userId,
-    username: user.username
-  }));
-}
-
 // WebSocket server
 const server = http.createServer();
 const wss = new WebSocket.Server({ server });
@@ -71,13 +40,12 @@ wss.on('connection', (ws, req) => {
   const username = urlParams.query.username || 'Anonymous';
   const roomName = urlParams.query.room || 'general';
   
-  // Set user properties
-  ws.userId = generateUserId();
-  ws.username = username;
+  // Register user
+  const userId = registerUser(ws, username);
   ws.roomName = null;
   ws.isAlive = true;
 
-  console.log(`User ${ws.userId} (${username}) connected`);
+  console.log(`User ${userId} (${username}) connected`);
 
   // Handle pong responses for heartbeat
   ws.on('pong', () => {
@@ -123,7 +91,7 @@ wss.on('connection', (ws, req) => {
   // Send welcome message
   ws.send(createMessage(MESSAGE_TYPES.SUCCESS, {
     message: 'Connected to chat server',
-    userId: ws.userId,
+    userId: userId,
     roomList: getRoomList()
   }));
 });
@@ -137,13 +105,8 @@ function handleJoin(ws, message) {
     handleLeave(ws);
   }
   
-  // Create room if it doesn't exist
-  if (!rooms.has(roomName)) {
-    rooms.set(roomName, new Set());
-  }
-  
-  // Add user to room
-  rooms.get(roomName).add(ws);
+  // Add user to room using room module
+  addClientToRoom(roomName, ws);
   ws.roomName = roomName;
   
   // Notify room of new user
@@ -186,27 +149,23 @@ function handleMessage(ws, message) {
 
 function handleLeave(ws) {
   if (ws.roomName) {
-    const room = rooms.get(ws.roomName);
-    if (room) {
-      room.delete(ws);
-      
-      // Remove empty rooms
-      if (room.size === 0) {
-        rooms.delete(ws.roomName);
-      } else {
-        // Notify room of user leaving
-        const leaveMessage = createMessage(MESSAGE_TYPES.SUCCESS, {
-          message: `${ws.username} left the room`,
-          user: { id: ws.userId, username: ws.username }
-        });
-        
-        broadcastToRoom(ws.roomName, leaveMessage);
-      }
-    }
+    // Remove user from room using room module
+    removeClientFromRoom(ws.roomName, ws);
+    
+    // Notify room of user leaving
+    const leaveMessage = createMessage(MESSAGE_TYPES.SUCCESS, {
+      message: `${ws.username} left the room`,
+      user: { id: ws.userId, username: ws.username }
+    });
+    
+    broadcastToRoom(ws.roomName, leaveMessage);
     
     console.log(`User ${ws.userId} (${ws.username}) left room: ${ws.roomName}`);
     ws.roomName = null;
   }
+  
+  // Remove user from global registry
+  removeUser(ws);
 }
 
 // Heartbeat to detect dead connections

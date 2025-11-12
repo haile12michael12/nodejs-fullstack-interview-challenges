@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import DMPanel from './DMPanel'
 
 const WS_URL = 'ws://localhost:3000'
 
@@ -13,6 +14,7 @@ function App() {
   const [error, setError] = useState('')
   const [reconnectAttempts, setReconnectAttempts] = useState(0)
   const [showReconnectInfo, setShowReconnectInfo] = useState(false)
+  const [currentUser, setCurrentUser] = useState(null)
   
   const wsRef = useRef(null)
   const messagesEndRef = useRef(null)
@@ -113,6 +115,9 @@ function App() {
             timestamp: data.timestamp
           }])
         }
+        if (data.data.userId) {
+          setCurrentUser({ id: data.data.userId, username })
+        }
         break
 
       case 'user_list':
@@ -127,6 +132,17 @@ function App() {
           user: data.data.user,
           timestamp: data.timestamp,
           isOwn: data.data.user.id === wsRef.current?.userId
+        }])
+        break
+
+      case 'dm':
+        setMessages(prev => [...prev, {
+          id: Date.now() + Math.random(),
+          type: 'dm',
+          text: data.data.text,
+          user: data.data.from,
+          timestamp: data.data.timestamp,
+          isOwn: data.data.from === wsRef.current?.userId
         }])
         break
 
@@ -148,6 +164,15 @@ function App() {
     }))
 
     setNewMessage('')
+  }
+
+  const sendDM = (toUserId, message) => {
+    if (!message.trim() || !isConnected) return
+
+    wsRef.current?.send(JSON.stringify({
+      type: 'dm',
+      data: { to: toUserId, text: message.trim() }
+    }))
   }
 
   const handleKeyPress = (e) => {
@@ -272,6 +297,12 @@ function App() {
           Send
         </button>
       </div>
+
+      <DMPanel 
+        onSendDM={sendDM}
+        users={users}
+        currentUser={currentUser}
+      />
 
       {users.length > 0 && (
         <div className="user-list">
