@@ -1,11 +1,13 @@
 const { GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList, GraphQLNonNull } = require('graphql');
+const { User } = require('../models/User');
+const { Post } = require('../models/Post');
 
 const UserType = new GraphQLObjectType({
   name: 'User',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt) },
-    name: { type: GraphQLNonNull(GraphQLString) },
-    email: { type: GraphQLNonNull(GraphQLString) },
+    id: { type: new GraphQLNonNull(GraphQLInt) },
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    email: { type: new GraphQLNonNull(GraphQLString) },
     posts: {
       type: new GraphQLList(PostType),
       resolve: (user) => Post.findByUserId(user.id)
@@ -16,10 +18,10 @@ const UserType = new GraphQLObjectType({
 const PostType = new GraphQLObjectType({
   name: 'Post',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt) },
-    title: { type: GraphQLNonNull(GraphQLString) },
+    id: { type: new GraphQLNonNull(GraphQLInt) },
+    title: { type: new GraphQLNonNull(GraphQLString) },
     content: { type: GraphQLString },
-    authorId: { type: GraphQLNonNull(GraphQLInt) },
+    authorId: { type: new GraphQLNonNull(GraphQLInt) },
     author: {
       type: UserType,
       resolve: (post) => User.findById(post.authorId)
@@ -37,7 +39,7 @@ const QueryType = new GraphQLObjectType({
     user: {
       type: UserType,
       args: {
-        id: { type: GraphQLNonNull(GraphQLInt) }
+        id: { type: new GraphQLNonNull(GraphQLInt) }
       },
       resolve: (_, { id }) => User.findById(id)
     },
@@ -48,7 +50,7 @@ const QueryType = new GraphQLObjectType({
     post: {
       type: PostType,
       args: {
-        id: { type: GraphQLNonNull(GraphQLInt) }
+        id: { type: new GraphQLNonNull(GraphQLInt) }
       },
       resolve: (_, { id }) => Post.findById(id)
     }
@@ -61,17 +63,17 @@ const MutationType = new GraphQLObjectType({
     createUser: {
       type: UserType,
       args: {
-        name: { type: GraphQLNonNull(GraphQLString) },
-        email: { type: GraphQLNonNull(GraphQLString) }
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        email: { type: new GraphQLNonNull(GraphQLString) }
       },
       resolve: (_, { name, email }) => User.create({ name, email })
     },
     createPost: {
       type: PostType,
       args: {
-        title: { type: GraphQLNonNull(GraphQLString) },
+        title: { type: new GraphQLNonNull(GraphQLString) },
         content: { type: GraphQLString },
-        authorId: { type: GraphQLNonNull(GraphQLInt) }
+        authorId: { type: new GraphQLNonNull(GraphQLInt) }
       },
       resolve: (_, { title, content, authorId }) => Post.create({ title, content, authorId })
     }
@@ -84,4 +86,3 @@ module.exports = {
   UserType,
   PostType
 };
-

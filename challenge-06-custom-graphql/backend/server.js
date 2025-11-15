@@ -1,7 +1,7 @@
 const http = require('http');
 const url = require('url');
 const config = require('./src/config');
-const { sendError } = require('./src/utils/response');
+const { sendError, sendResponse } = require('./src/utils/response');
 const { handleGraphQL } = require('./src/routes/graphql');
 
 // CORS middleware
