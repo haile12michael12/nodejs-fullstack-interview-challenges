@@ -260,7 +260,10 @@ const commands = {
   quit: {
     description: 'Exit the REPL (alias for exit)',
     usage: 'quit',
-    handler: commands.exit.handler
+    handler: () => {
+      console.log('Goodbye!');
+      process.exit(0);
+    }
   }
 };
 
@@ -320,4 +323,4 @@ if (require.main === module) {
   startREPL();
 }
 
-module.exports = { startREPL, executeCommand, commands };
+module.exports = { startREPL, executeCommand, commands, data, loadData, saveData };

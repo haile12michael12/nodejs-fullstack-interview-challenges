@@ -16,14 +16,15 @@ COPY . .
 # Create data directory
 RUN mkdir -p /app/data
 
-# Make the script executable
+# Make the scripts executable
 RUN chmod +x repl.js
+RUN chmod +x server.js
 
 # Set environment variables
 ENV NODE_ENV=production
 
-# Expose port (if needed for future web interface)
+# Expose port for web server
 EXPOSE 3000
 
-# Default command
+# Default command for CLI REPL
 CMD ["node", "repl.js"]

@@ -1,5 +1,5 @@
 const config = {
-  port: process.env.PORT || 3000,
+  port: process.env.PORT || 3001, // Changed from 3000 to 3001
   redis: {
     url: process.env.REDIS_URL || 'redis://localhost:6379',
     retryDelayOnFailover: 100,
@@ -21,7 +21,3 @@ const config = {
 };
 
 module.exports = config;
-
-
-
-

@@ -26,11 +26,22 @@ function corsMiddleware(req, res) {
 
 // Initialize Redis connection
 async function initializeRedis() {
+  // Check if we should skip Redis (for testing purposes)
+  if (process.env.SKIP_REDIS === 'true') {
+    console.log('Skipping Redis initialization (SKIP_REDIS=true)');
+    rateLimiter = null;
+    return;
+  }
+  
   try {
     redisClient = createClient({
       url: config.redis.url,
       retryDelayOnFailover: config.redis.retryDelayOnFailover,
-      maxRetriesPerRequest: config.redis.maxRetriesPerRequest
+      maxRetriesPerRequest: config.redis.maxRetriesPerRequest,
+      connectTimeout: 5000, // Add connection timeout
+      socket: {
+        connectTimeout: 5000
+      }
     });
 
     redisClient.on('error', (err) => {
@@ -41,7 +52,14 @@ async function initializeRedis() {
       console.log('Connected to Redis');
     });
 
-    await redisClient.connect();
+    // Add a timeout to prevent hanging
+    await Promise.race([
+      redisClient.connect(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Redis connection timeout')), 5000)
+      )
+    ]);
+    
     rateLimiter = new TokenBucketRateLimiter(redisClient);
     
     console.log('Redis initialized successfully');

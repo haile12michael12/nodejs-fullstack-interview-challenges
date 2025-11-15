@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = 'http://localhost:3002';
 
 export async function renderMarkdown(markdown) {
   const response = await fetch(`${API_BASE}/render`, {

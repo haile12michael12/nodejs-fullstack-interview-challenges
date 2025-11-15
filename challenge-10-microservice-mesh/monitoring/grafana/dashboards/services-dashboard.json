@@ -1,0 +1,84 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Microservice Dashboard",
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 0,
+    "refresh": "25s",
+    "rows": [
+      {
+        "title": "Service Health",
+        "height": "250px",
+        "panels": [
+          {
+            "id": 1,
+            "type": "singlestat",
+            "title": "User Service",
+            "datasource": "Prometheus",
+            "targets": [
+              {
+                "expr": "up{job=\"user-service\"}",
+                "format": "time_series"
+              }
+            ],
+            "valueMaps": [
+              {
+                "value": "1",
+                "text": "UP"
+              },
+              {
+                "value": "0",
+                "text": "DOWN"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "type": "singlestat",
+            "title": "Email Service",
+            "datasource": "Prometheus",
+            "targets": [
+              {
+                "expr": "up{job=\"email-service\"}",
+                "format": "time_series"
+              }
+            ],
+            "valueMaps": [
+              {
+                "value": "1",
+                "text": "UP"
+              },
+              {
+                "value": "0",
+                "text": "DOWN"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "type": "singlestat",
+            "title": "Gateway",
+            "datasource": "Prometheus",
+            "targets": [
+              {
+                "expr": "up{job=\"gateway\"}",
+                "format": "time_series"
+              }
+            ],
+            "valueMaps": [
+              {
+                "value": "1",
+                "text": "UP"
+              },
+              {
+                "value": "0",
+                "text": "DOWN"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

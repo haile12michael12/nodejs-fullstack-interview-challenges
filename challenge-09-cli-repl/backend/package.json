@@ -1,18 +1,32 @@
 {
   "name": "cli-repl-backend",
   "version": "1.0.0",
-  "description": "Interactive CLI REPL with Docker support",
+  "description": "Interactive CLI REPL with Docker support and REST API",
   "main": "repl.js",
   "scripts": {
     "start": "node repl.js",
+    "server": "node server.js",
     "dev": "node --watch repl.js",
+    "dev:server": "node --watch server.js",
     "docker:build": "docker build -t repl .",
-    "docker:run": "docker run -it --rm repl"
+    "docker:run": "docker run -it --rm repl",
+    "docker:run:server": "docker run -p 3000:3000 repl"
   },
-  "keywords": ["cli", "repl", "docker", "nodejs"],
+  "keywords": [
+    "cli",
+    "repl",
+    "docker",
+    "nodejs",
+    "api"
+  ],
   "author": "",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-fetch": "^3.3.2"
   }
 }
