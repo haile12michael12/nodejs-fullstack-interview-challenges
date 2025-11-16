@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "name": "Widget A",
+    "price": 29.99,
+    "description": "A high-quality widget for various uses",
+    "category": "Widgets"
+  },
+  {
+    "id": 2,
+    "name": "Gadget B",
+    "price": 49.99,
+    "description": "An advanced gadget with modern features",
+    "category": "Gadgets"
+  },
+  {
+    "id": 3,
+    "name": "Tool C",
+    "price": 19.99,
+    "description": "Essential tool for everyday tasks",
+    "category": "Tools"
+  },
+  {
+    "id": 4,
+    "name": "Device D",
+    "price": 99.99,
+    "description": "Premium device with cutting-edge technology",
+    "category": "Devices"
+  }
+]
